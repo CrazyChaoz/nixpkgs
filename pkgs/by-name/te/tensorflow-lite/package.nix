@@ -4,23 +4,26 @@
   buildBazelPackage,
   fetchFromGitHub,
   lib,
+  perl,
 }:
 let
   buildPlatform = stdenv.buildPlatform;
   hostPlatform = stdenv.hostPlatform;
-  pythonEnv = buildPackages.python3.withPackages (
+  pythonEnv = buildPackages.python312.withPackages (
     ps: with ps; [
       distutils
       numpy
+      cython
     ]
   );
   bazelDepsSha256ByBuildAndHost = {
     x86_64-linux = {
-      x86_64-linux = "sha256-61qmnAB80syYhURWYJOiOnoGOtNa1pPkxfznrFScPAo=";
-      aarch64-linux = "sha256-sOIYpp98wJRz3RGvPasyNEJ05W29913Lsm+oi/aq/Ag=";
+      x86_64-linux = "sha256-hInf6KQ4N3sOTtklMkY2ATsOsHOnkfK1mSQGjxWqFZk=";
+      #x86_64-linux = lib.fakeHash;
+      aarch64-linux = lib.fakeHash;
     };
     aarch64-linux = {
-      aarch64-linux = "sha256-MJU4y9Dt9xJWKgw7iKW+9Ur856rMIHeFD5u05s+Q7rQ=";
+      aarch64-linux = lib.fakeHash;
     };
   };
   bazelHostConfigName.aarch64-linux = "elinux_aarch64";
@@ -33,25 +36,25 @@ let
 in
 buildBazelPackage rec {
   name = "tensorflow-lite";
-  version = "2.13.0";
+  version = "2.19.0"; #https://www.tensorflow.org/install/source#cpu
 
   src = fetchFromGitHub {
     owner = "tensorflow";
     repo = "tensorflow";
     rev = "v${version}";
-    hash = "sha256-Rq5pAVmxlWBVnph20fkAwbfy+iuBNlfFy14poDPd5h0=";
+    hash = "sha256-61Ceoed8D65IvipM0OsXJ3xGWi5jtUDPUxhYNOffImU=";
   };
 
-  bazel = buildPackages.bazel_5;
+  bazel = buildPackages.bazel_6;
 
   nativeBuildInputs = [
     pythonEnv
-    buildPackages.perl
+    perl
   ];
 
   bazelTargets = [
+    "//tensorflow/lite/c:libtensorflowlite_c.so"
     "//tensorflow/lite:libtensorflowlite.so"
-    "//tensorflow/lite/c:tensorflowlite_c"
     "//tensorflow/lite/tools/benchmark:benchmark_model"
     "//tensorflow/lite/tools/benchmark:benchmark_model_performance_options"
   ];
@@ -59,6 +62,14 @@ buildBazelPackage rec {
   bazelFlags =
     [
       "--config=opt"
+      "--cxxopt=-x"
+      "--cxxopt=c++"
+      "--host_cxxopt=-x"
+      "--host_cxxopt=c++"
+      # workaround for https://github.com/bazelbuild/bazel/issues/15359
+      "--spawn_strategy=sandboxed"
+      "--sandbox_debug"
+
     ]
     ++ lib.optionals (hostPlatform.system != buildPlatform.system) [
       "--config=${bazelHostConfigName.${hostPlatform.system}}"
@@ -88,7 +99,10 @@ buildBazelPackage rec {
 
   fetchAttrs.sha256 = bazelDepsSha256;
 
-  PYTHON_BIN_PATH = pythonEnv.interpreter;
+  HERMETIC_PYTHON_VERSION = "3.12";
+  PYTHON_BIN_PATH = "${pythonEnv}/bin/python3.12";
+  PYTHON_LIB_PATH = "${pythonEnv}/lib/python3.12/site-packages";
+  CLANG_COMPILER_PATH = "${buildPackages.clang}/bin/clang";
 
   dontAddBazelOpts = true;
   removeRulesCC = false;
@@ -104,6 +118,20 @@ buildBazelPackage rec {
   preConfigure = ''
     patchShebangs configure
   '';
+  preBuild = ''
+    ##############################################################
+    # DEBUG
+    # check if /usr/bin/env python3 works
+    # required in https://github.com/bazelbuild/bazel/blob/6.5.0/src/main/java/com/google/devtools/build/lib/bazel/rules/python/BazelPythonSemantics.java#L254
+    ##############################################################
+    if ! command -v /usr/bin/env python3 &> /dev/null; then
+      echo "Error: /usr/bin/env python3 not found"
+      exit 1
+    fi
+    echo "We can use /usr/bin/env python3"
+    ################################################################
+  '';
+
 
   # configure script freaks out when parameters are passed
   dontAddPrefix = true;
