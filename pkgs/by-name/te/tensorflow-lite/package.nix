@@ -8,7 +8,7 @@
 let
   buildPlatform = stdenv.buildPlatform;
   hostPlatform = stdenv.hostPlatform;
-  pythonEnv = buildPackages.python3.withPackages (
+  pythonEnv = buildPackages.python312.withPackages (
     ps: with ps; [
       distutils
       numpy
@@ -16,11 +16,11 @@ let
   );
   bazelDepsSha256ByBuildAndHost = {
     x86_64-linux = {
-      x86_64-linux = "sha256-61qmnAB80syYhURWYJOiOnoGOtNa1pPkxfznrFScPAo=";
-      aarch64-linux = "sha256-sOIYpp98wJRz3RGvPasyNEJ05W29913Lsm+oi/aq/Ag=";
+      x86_64-linux = "sha256-hInf6KQ4N3sOTtklMkY2ATsOsHOnkfK1mSQGjxWqFZk=";
+      aarch64-linux = "sha256-SxcI3dv7LCAgvuveIPs6wD3krRiotTDD08LrzXVAOWg=";
     };
     aarch64-linux = {
-      aarch64-linux = "sha256-MJU4y9Dt9xJWKgw7iKW+9Ur856rMIHeFD5u05s+Q7rQ=";
+      aarch64-linux = "sha256-yU3efv7GUjQthPN88SXMwkUs2VEIy8s0poqy4KGJzyY=";
     };
   };
   bazelHostConfigName.aarch64-linux = "elinux_aarch64";
@@ -33,16 +33,16 @@ let
 in
 buildBazelPackage rec {
   name = "tensorflow-lite";
-  version = "2.13.0";
+  version = "2.19.0"; #https://www.tensorflow.org/install/source#cpu
 
   src = fetchFromGitHub {
     owner = "tensorflow";
     repo = "tensorflow";
     rev = "v${version}";
-    hash = "sha256-Rq5pAVmxlWBVnph20fkAwbfy+iuBNlfFy14poDPd5h0=";
+    hash = "sha256-61Ceoed8D65IvipM0OsXJ3xGWi5jtUDPUxhYNOffImU=";
   };
 
-  bazel = buildPackages.bazel_5;
+  bazel = buildPackages.bazel_6;
 
   nativeBuildInputs = [
     pythonEnv
@@ -51,7 +51,7 @@ buildBazelPackage rec {
 
   bazelTargets = [
     "//tensorflow/lite:libtensorflowlite.so"
-    "//tensorflow/lite/c:tensorflowlite_c"
+    "//tensorflow/lite/c:libtensorflowlite_c.so"
     "//tensorflow/lite/tools/benchmark:benchmark_model"
     "//tensorflow/lite/tools/benchmark:benchmark_model_performance_options"
   ];
@@ -59,12 +59,23 @@ buildBazelPackage rec {
   bazelFlags =
     [
       "--config=opt"
+      "--cxxopt=-x"
+      "--cxxopt=c++"
+      "--host_cxxopt=-x"
+      "--host_cxxopt=c++"
+      
+      # workaround for https://github.com/bazelbuild/bazel/issues/15359
+      "--spawn_strategy=sandboxed"
+      "--sandbox_debug"
     ]
     ++ lib.optionals (hostPlatform.system != buildPlatform.system) [
       "--config=${bazelHostConfigName.${hostPlatform.system}}"
     ];
 
-  bazelBuildFlags = [ "--cxxopt=--std=c++17" ];
+  bazelBuildFlags = [ 
+    "--cxxopt=--std=c++17" 
+    "--extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict"
+  ];
 
   buildAttrs = {
     installPhase = ''
@@ -88,7 +99,10 @@ buildBazelPackage rec {
 
   fetchAttrs.sha256 = bazelDepsSha256;
 
-  PYTHON_BIN_PATH = pythonEnv.interpreter;
+  HERMETIC_PYTHON_VERSION = "3.12";
+  PYTHON_BIN_PATH = "${pythonEnv}/bin/python3.12";
+  PYTHON_LIB_PATH = "${pythonEnv}/lib/python3.12/site-packages";
+  CLANG_COMPILER_PATH = "${buildPackages.clang}/bin/clang";
 
   dontAddBazelOpts = true;
   removeRulesCC = false;
