@@ -63,7 +63,7 @@ buildBazelPackage rec {
       "--cxxopt=c++"
       "--host_cxxopt=-x"
       "--host_cxxopt=c++"
-      
+
       # workaround for https://github.com/bazelbuild/bazel/issues/15359
       "--spawn_strategy=sandboxed"
       "--sandbox_debug"
@@ -109,10 +109,6 @@ buildBazelPackage rec {
 
   postPatch = ''
     rm .bazelversion
-
-    # Fix gcc-13 build failure by including missing include headers
-    sed -e '1i #include <cstdint>' -i \
-      tensorflow/lite/kernels/internal/spectrogram.cc
   '';
 
   preConfigure = ''
