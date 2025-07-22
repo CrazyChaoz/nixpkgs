@@ -4,7 +4,6 @@
   buildBazelPackage,
   fetchFromGitHub,
   lib,
-  perl,
 }:
 let
   buildPlatform = stdenv.buildPlatform;
@@ -13,13 +12,11 @@ let
     ps: with ps; [
       distutils
       numpy
-      cython
     ]
   );
   bazelDepsSha256ByBuildAndHost = {
     x86_64-linux = {
       x86_64-linux = "sha256-hInf6KQ4N3sOTtklMkY2ATsOsHOnkfK1mSQGjxWqFZk=";
-      #x86_64-linux = lib.fakeHash;
       aarch64-linux = lib.fakeHash;
     };
     aarch64-linux = {
@@ -49,12 +46,12 @@ buildBazelPackage rec {
 
   nativeBuildInputs = [
     pythonEnv
-    perl
+    buildPackages.perl
   ];
 
   bazelTargets = [
-    "//tensorflow/lite/c:libtensorflowlite_c.so"
     "//tensorflow/lite:libtensorflowlite.so"
+    "//tensorflow/lite/c:libtensorflowlite_c.so"
     "//tensorflow/lite/tools/benchmark:benchmark_model"
     "//tensorflow/lite/tools/benchmark:benchmark_model_performance_options"
   ];
@@ -66,16 +63,19 @@ buildBazelPackage rec {
       "--cxxopt=c++"
       "--host_cxxopt=-x"
       "--host_cxxopt=c++"
+      
       # workaround for https://github.com/bazelbuild/bazel/issues/15359
       "--spawn_strategy=sandboxed"
       "--sandbox_debug"
-
     ]
     ++ lib.optionals (hostPlatform.system != buildPlatform.system) [
       "--config=${bazelHostConfigName.${hostPlatform.system}}"
     ];
 
-  bazelBuildFlags = [ "--cxxopt=--std=c++17" ];
+  bazelBuildFlags = [ 
+    "--cxxopt=--std=c++17" 
+    "--extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict"
+  ];
 
   buildAttrs = {
     installPhase = ''
@@ -118,20 +118,6 @@ buildBazelPackage rec {
   preConfigure = ''
     patchShebangs configure
   '';
-  preBuild = ''
-    ##############################################################
-    # DEBUG
-    # check if /usr/bin/env python3 works
-    # required in https://github.com/bazelbuild/bazel/blob/6.5.0/src/main/java/com/google/devtools/build/lib/bazel/rules/python/BazelPythonSemantics.java#L254
-    ##############################################################
-    if ! command -v /usr/bin/env python3 &> /dev/null; then
-      echo "Error: /usr/bin/env python3 not found"
-      exit 1
-    fi
-    echo "We can use /usr/bin/env python3"
-    ################################################################
-  '';
-
 
   # configure script freaks out when parameters are passed
   dontAddPrefix = true;
