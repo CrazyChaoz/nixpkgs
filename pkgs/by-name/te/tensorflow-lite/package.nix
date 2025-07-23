@@ -30,10 +30,13 @@ let
   bazelDepsSha256 =
     bazelDepsSha256ByHost.${hostPlatform.system}
       or (throw "unsupported host system ${hostPlatform.system} with build system ${buildPlatform.system}");
+  isCrossCompileToAarch64 = (
+    (hostPlatform.system != buildPlatform.system) && stdenv.targetPlatform.isAarch64
+  );
 in
 buildBazelPackage rec {
   name = "tensorflow-lite";
-  version = "2.19.0"; #https://www.tensorflow.org/install/source#cpu
+  version = "2.19.0";
 
   src = fetchFromGitHub {
     owner = "tensorflow";
@@ -47,6 +50,7 @@ buildBazelPackage rec {
   nativeBuildInputs = [
     pythonEnv
     buildPackages.perl
+    buildPackages.auto-patchelf
   ];
 
   bazelTargets = [
@@ -63,17 +67,17 @@ buildBazelPackage rec {
       "--cxxopt=c++"
       "--host_cxxopt=-x"
       "--host_cxxopt=c++"
-      
+
       # workaround for https://github.com/bazelbuild/bazel/issues/15359
       "--spawn_strategy=sandboxed"
       "--sandbox_debug"
     ]
-    ++ lib.optionals (hostPlatform.system != buildPlatform.system) [
+    ++ lib.optionals isCrossCompileToAarch64 [
       "--config=${bazelHostConfigName.${hostPlatform.system}}"
     ];
 
-  bazelBuildFlags = [ 
-    "--cxxopt=--std=c++17" 
+  bazelBuildFlags = [
+    "--cxxopt=--std=c++17"
     "--extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict"
   ];
 
@@ -95,6 +99,12 @@ buildBazelPackage rec {
         chmod -x "$path"
       done
     '';
+    preBuild = lib.optionalString isCrossCompileToAarch64 ''
+      # delete gdb so we do not have to patch it
+      rm /build/output/external/aarch64_linux_toolchain/bin/aarch64-none-linux-gnu-gdb
+      NIX_BINTOOLS=${buildPackages.stdenv.cc.bintools} auto-patchelf --libs ${buildPackages.stdenv.cc.cc.lib.lib}/lib --paths /build/output/external/aarch64_linux_toolchain
+    '';
+
   };
 
   fetchAttrs.sha256 = bazelDepsSha256;
@@ -102,8 +112,7 @@ buildBazelPackage rec {
   HERMETIC_PYTHON_VERSION = "3.12";
   PYTHON_BIN_PATH = "${pythonEnv}/bin/python3.12";
   PYTHON_LIB_PATH = "${pythonEnv}/lib/python3.12/site-packages";
-  CLANG_COMPILER_PATH = "${buildPackages.clang}/bin/clang";
-
+  CLANG_COMPILER_PATH = "${buildPackages.clang}/bin/${stdenv.cc.targetPrefix}clang";
   dontAddBazelOpts = true;
   removeRulesCC = false;
 
