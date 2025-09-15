@@ -175,16 +175,13 @@ stdenv.mkDerivation rec {
   buildInputs = [
     # Add any libraries required for building TensorFlow Lite
     eigen
-    #abseil-cpp
     farmhash
     zlib
   ];
 
-  # If TensorFlow Lite uses a subdirectory for CMake, set sourceRoot
   sourceRoot = "source/tensorflow/lite";
 
   cmakeFlags = [
-    # Add any necessary CMake flags here, e.g.:
     "-DCMAKE_BUILD_TYPE=Release"
     "-DTFLITE_ENABLE_GPU=ON"
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
@@ -545,8 +542,6 @@ stdenv.mkDerivation rec {
   #     install -D "$f" "$path"
   #     chmod -x "$path"
   #   done
-        
-    
   # '';
 
   meta = with lib; {
