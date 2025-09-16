@@ -14,7 +14,7 @@
   zlib,
   patchelf,
   buildPackages,
-  protobuf
+  protobuf,
 }:
 
 stdenv.mkDerivation rec {
@@ -228,27 +228,26 @@ stdenv.mkDerivation rec {
     rev = "2021-02-02";
     sha256 = "sha256-jOfcmuFvU7B67UjHZ0MwVHfrsTaN1Pem2uUHYmprZ2I=";
   };
-  
-  
+
   custom-flatc = buildPackages.stdenv.mkDerivation rec {
     pname = "flatbuffers";
     version = "24.3.25";
-  
+
     src = flatbuffers-file;
-  
+
     nativeBuildInputs = [
       cmake
       python3
     ];
-  
+
     cmakeFlags = [
       "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
       "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
     ];
-  
+
     doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
     checkTarget = "test";
-  
+
     meta = with lib; {
       description = "Memory Efficient Serialization Library";
       longDescription = ''
@@ -264,6 +263,13 @@ stdenv.mkDerivation rec {
     };
   };
 
+  tflite-tools = runCommand "tflite-tools" { } ''
+    mkdir -p $out/bin
+    cp '${custom-flatc}/bin/flatc' $out/bin/
+    cp '${buildPackages.protobuf}/bin/protoc' $out/bin/
+    chmod +x $out/bin/flatc $out/bin/protoc
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -273,7 +279,7 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     pkg-config
     git
-    
+
   ];
 
   buildInputs = [
@@ -292,8 +298,7 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_KERNEL_TEST=OFF"
-    "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
-    "-DPROTOC_EXE=${buildPackages.protobuf}/bin/protoc"
+    "-DTFLITE_HOST_TOOLS_DIR=${tflite-tools}"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
