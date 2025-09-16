@@ -141,6 +141,29 @@ stdenv.mkDerivation rec {
     rev = "585e73e63cb35c8a416c83a48ca9ab79f7f7d45e";
     sha256 = "sha256-mqJMVjZ4rn5O3J/qI/N7HbnMdMSarPYHTIqNBmjZv0Q=";
   };
+  
+  kleidiai-file = fetchFromGitHub {
+    owner = "ARM-software";
+    repo = "kleidiai";
+    rev = "v0.1.0";
+    sha256 = "sha256-6Xq7HHe7MdygHtgF1Cm8ECFi2tkVFGuk7jNX1P0+rl8=";
+  };
+  
+  xnnpack-modded =
+    runCommand "xnnpack-modded"
+      {
+      }
+      ''
+        mkdir -p $out
+        cp -r '${xnnpack-file}/.' $out/
+
+        chmod +w $out/cmake
+
+        sed -i '21,22c\
+        URL file://${kleidiai-file}\
+        URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f\
+        ' $out/cmake/DownloadKleidiAI.cmake
+      '';
 
   protobuf-file = fetchFromGitHub {
     owner = "protocolbuffers";
@@ -172,7 +195,6 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     pkg-config
     git
-    flatbuffers_23
   ];
 
   buildInputs = [
@@ -191,7 +213,7 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DBUILD_SHARED_LIBS=ON"
-    "-DTFLITE_HOST_TOOLS_DIR==${flatbuffers_23}/bin"
+    "-DTFLITE_HOST_TOOLS_DIR=${flatbuffers_23}/bin"
   ];
 
   postPatch = ''
@@ -297,10 +319,10 @@ stdenv.mkDerivation rec {
     # replace line 24-27 in tools/cmake/modules/xnnpack.cmake
     # from internet URL to local path
     sed -i '24,27c\
-      URL file://${xnnpack-file}\
+      URL file://${xnnpack-modded}\
       URL_HASH SHA256=9aa24c563678ae7e4edc9fea23f37b1db9cc74c49aacf6074c8a8d0668d9bf44 \
       LICENSE_FILE "LICENSE"\
-      LICENSE_URL "file://${xnnpack-file}/LICENSE"\
+      LICENSE_URL "file://${xnnpack-modded}/LICENSE"\
     ' tools/cmake/modules/xnnpack.cmake
 
     # replace line 20-23 in tools/cmake/modules/protobuf.cmake
