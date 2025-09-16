@@ -7,13 +7,13 @@
   perl,
   autoPatchelfHook,
   pkg-config,
-  flatbuffers_23,
   eigen,
   git,
   runCommand,
   fetchzip,
   zlib,
   patchelf,
+  buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -255,7 +255,7 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_KERNEL_TEST=OFF"
-    "-DTFLITE_HOST_TOOLS_DIR=${flatbuffers_23}/bin"
+    "-DTFLITE_HOST_TOOLS_DIR=${buildPackages.flatbuffers_23}/bin"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
