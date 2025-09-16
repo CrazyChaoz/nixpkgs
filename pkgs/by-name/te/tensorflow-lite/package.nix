@@ -14,6 +14,7 @@
   zlib,
   patchelf,
   buildPackages,
+  protobuf
 }:
 
 stdenv.mkDerivation rec {
@@ -272,6 +273,7 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     pkg-config
     git
+    
   ];
 
   buildInputs = [
@@ -291,6 +293,7 @@ stdenv.mkDerivation rec {
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_KERNEL_TEST=OFF"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
+    "-DPROTOC_EXE=${buildPackages.protobuf}/bin/protoc"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
