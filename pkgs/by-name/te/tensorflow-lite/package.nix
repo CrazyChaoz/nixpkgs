@@ -270,7 +270,7 @@ stdenv.mkDerivation rec {
     chmod +x $out/bin/flatc $out/bin/protoc
   '';
 
-  strictDeps = true;
+  #strictDeps = true;
 
   nativeBuildInputs = [
     cmake
