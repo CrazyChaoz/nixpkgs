@@ -7,7 +7,7 @@
   perl,
   autoPatchelfHook,
   pkg-config,
-  abseil-cpp,
+  flatbuffers_23,
   eigen,
   git,
   runCommand,
@@ -162,6 +162,8 @@ stdenv.mkDerivation rec {
     rev = "d9e4955c65cd4367dd6bf46f4ccb8cd3d100540b";
     sha256 = "sha256-QTywqQCkyGFpdbtDBvUwz9bGXxbJs/qoFKF6zYAZUmQ=";
   };
+  
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -170,6 +172,7 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     pkg-config
     git
+    flatbuffers_23
   ];
 
   buildInputs = [
@@ -188,8 +191,9 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DBUILD_SHARED_LIBS=ON"
+    "-DTFLITE_HOST_TOOLS_DIR==${flatbuffers_23}/bin"
   ];
-  
+
   postPatch = ''
     # Apply any patches needed for GCC compatibility, etc.
     sed -e '1i #include <cstdint>' -i kernels/internal/spectrogram.cc
@@ -339,8 +343,6 @@ stdenv.mkDerivation rec {
 
     patchShebangs configure
   '';
-  
-  
 
   installPhase = ''
     mkdir -p $out/{bin,lib,include,everything}
@@ -352,16 +354,16 @@ stdenv.mkDerivation rec {
     # Copy binaries if any (e.g. benchmark tools)
     find . -type f  -name "*.a" -exec cp {} $out/lib \;
     find . -type f  -name "*.so" -exec cp {} $out/lib \;
-    
+
     ls -al $out/lib/
-    
+
     # Copy headers
     find . -type f -name '*.h' | while read f; do
       path="$out/include/''${f#./}"
       install -D "$f" "$path"
       chmod -x "$path"
     done
-            
+
     ${patchelf}/bin/patchelf --print-needed $out/lib/libtensorflow-lite.so
     ${patchelf}/bin/patchelf --remove-needed libfft2d_fftsg2d.so \
     --remove-needed libXNNPACK.so \
@@ -424,7 +426,7 @@ stdenv.mkDerivation rec {
     --remove-needed libabsl_raw_logging_internal.so \
     --remove-needed libabsl_log_severity.so \
     $out/lib/libtensorflow-lite.so
-    
+
     ${patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg2d.so \
     --add-needed $out/lib/libXNNPACK.so \
     --add-needed $out/lib/libfft2d_fftsg.so \
@@ -486,38 +488,38 @@ stdenv.mkDerivation rec {
     --add-needed $out/lib/libabsl_raw_logging_internal.so \
     --add-needed $out/lib/libabsl_log_severity.so \
     $out/lib/libtensorflow-lite.so
-    
+
     ${patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg2d.so
-    
+
     ${patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg2d.so
-    
+
     ${patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg3d.so
-    
+
     ${patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg3d.so
-    
-    
+
+
     ${patchelf}/bin/patchelf --remove-needed libfeature_proto.so \
     $out/lib/libexample_proto.so
-    
+
     ${patchelf}/bin/patchelf --add-needed $out/lib/libfeature_proto.so \
     $out/lib/libexample_proto.so
-    
-    
+
+
     ${patchelf}/bin/patchelf \
     --remove-needed libpthreadpool.so \
     --remove-needed libcpuinfo.so \
     $out/lib/libXNNPACK.so
-    
+
     ${patchelf}/bin/patchelf \
     --add-needed $out/lib/libpthreadpool.so \
     --add-needed $out/lib/libcpuinfo.so \
     $out/lib/libXNNPACK.so
-        
-    
+
+
     ldd $out/lib/libtensorflow-lite.so
     ls -al $out/lib/
   '';
@@ -525,17 +527,14 @@ stdenv.mkDerivation rec {
   # installPhase = ''
   #   mkdir -p $out/{bin,lib,include,everything}
 
-
   #   # Copy binaries if any (e.g. benchmark tools)
   #   find . -type f -executable -name "benchmark_model*" -exec cp {} $out/bin \;
-    
-    
+
   #   find . -type f -name "*.a" -exec cp {} $out/lib \;
   #   find . -type f -name "*.so" -exec cp {} $out/lib \;
 
-    
   #   ls -al $out/lib/
-    
+
   #   # Copy headers
   #   find . -type f -name '*.h' | while read f; do
   #     path="$out/include/''${f#./}"
