@@ -149,6 +149,27 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-6Xq7HHe7MdygHtgF1Cm8ECFi2tkVFGuk7jNX1P0+rl8=";
   };
 
+  kleidiai-modded =
+    runCommand "kleidiai-modded"
+      {
+      }
+      ''
+        mkdir -p $out
+        cp -r '${kleidiai-file}/.' $out/
+
+        chmod +w $out/cmake
+
+        sed -i '14,15c\
+        URL file://${googletest-file}\
+        URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f\
+        ' $out/cmake/FetchGTest.cmake
+
+        sed -i '14,15c\
+        URL file://${googlebenchmark-file}\
+        URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f\
+        ' $out/cmake/FetchGBench.cmake
+      '';
+
   xnnpack-modded =
     runCommand "xnnpack-modded"
       {
@@ -160,7 +181,7 @@ stdenv.mkDerivation rec {
         chmod +w $out/cmake
 
         sed -i '21,22c\
-        URL file://${kleidiai-file}\
+        URL file://${kleidiai-modded}\
         URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f\
         ' $out/cmake/DownloadKleidiAI.cmake
       '';
