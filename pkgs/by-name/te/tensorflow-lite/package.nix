@@ -141,14 +141,14 @@ stdenv.mkDerivation rec {
     rev = "585e73e63cb35c8a416c83a48ca9ab79f7f7d45e";
     sha256 = "sha256-mqJMVjZ4rn5O3J/qI/N7HbnMdMSarPYHTIqNBmjZv0Q=";
   };
-  
+
   kleidiai-file = fetchFromGitHub {
     owner = "ARM-software";
     repo = "kleidiai";
     rev = "v0.1.0";
     sha256 = "sha256-6Xq7HHe7MdygHtgF1Cm8ECFi2tkVFGuk7jNX1P0+rl8=";
   };
-  
+
   xnnpack-modded =
     runCommand "xnnpack-modded"
       {
@@ -185,7 +185,28 @@ stdenv.mkDerivation rec {
     rev = "d9e4955c65cd4367dd6bf46f4ccb8cd3d100540b";
     sha256 = "sha256-QTywqQCkyGFpdbtDBvUwz9bGXxbJs/qoFKF6zYAZUmQ=";
   };
-  
+
+  googletest-file = fetchFromGitHub {
+    owner = "google";
+    repo = "googletest";
+    rev = "release-1.12.1";
+    sha256 = "sha256-W+OxRTVtemt2esw4P7IyGWXOonUN5ZuscjvzqkYvZbM=";
+  };
+
+  googlebenchmark-file = fetchFromGitHub {
+    owner = "google";
+    repo = "benchmark";
+    rev = "v1.7.0";
+    sha256 = "sha256-fQDktMUbVt8xerLmZT/v6mqnhQhji0Uf4hn6KnLFqfM=";
+  };
+
+  re2-file = fetchFromGitHub {
+    owner = "google";
+    repo = "re2";
+    rev = "2021-02-02";
+    sha256 = "sha256-jOfcmuFvU7B67UjHZ0MwVHfrsTaN1Pem2uUHYmprZ2I=";
+  };
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -212,8 +233,9 @@ stdenv.mkDerivation rec {
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
-    "-DBUILD_SHARED_LIBS=ON"
+    "-DTFLITE_KERNEL_TEST=OFF"
     "-DTFLITE_HOST_TOOLS_DIR=${flatbuffers_23}/bin"
+    "-DBUILD_SHARED_LIBS=ON"
   ];
 
   postPatch = ''
@@ -352,6 +374,34 @@ stdenv.mkDerivation rec {
       LICENSE_FILE "LICENSE"\
       LICENSE_URL "file://${abseil-file}/LICENSE"\
     ' tools/cmake/modules/abseil-cpp.cmake
+
+    # replace line 24-27 in tools/cmake/modules/Findgoogletest.cmake
+    # from internet URL to local path
+    sed -i '24,27c\
+      URL file://${googletest-file}\
+      URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264\
+      LICENSE_FILE "LICENSE"\
+      LICENSE_URL "file://${googletest-file}/LICENSE"\
+    ' tools/cmake/modules/Findgoogletest.cmake
+
+    # replace line 24-27 in tools/cmake/modules/Findgoogle_benchmark.cmake
+    # from internet URL to local path
+    sed -i '24,27c\
+      URL file://${googlebenchmark-file}\
+      URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264\
+      LICENSE_FILE "LICENSE"\
+      LICENSE_URL "file://${googlebenchmark-file}/LICENSE"\
+    ' tools/cmake/modules/Findgoogle_benchmark.cmake
+
+
+    # replace line 24-27 in tools/cmake/modules/Findre2.cmake
+    # from internet URL to local path
+    sed -i '24,27c\
+      URL file://${re2-file}\
+      URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264\
+      LICENSE_FILE "LICENSE"\
+      LICENSE_URL "file://${re2-file}/LICENSE"\
+    ' tools/cmake/modules/Findre2.cmake
 
 
   '';
