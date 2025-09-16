@@ -227,6 +227,41 @@ stdenv.mkDerivation rec {
     rev = "2021-02-02";
     sha256 = "sha256-jOfcmuFvU7B67UjHZ0MwVHfrsTaN1Pem2uUHYmprZ2I=";
   };
+  
+  
+  custom-flatc = buildPackages.stdenv.mkDerivation rec {
+    pname = "flatbuffers";
+    version = "24.3.25";
+  
+    src = flatbuffers-file;
+  
+    nativeBuildInputs = [
+      cmake
+      python3
+    ];
+  
+    cmakeFlags = [
+      "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
+      "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
+    ];
+  
+    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+    checkTarget = "test";
+  
+    meta = with lib; {
+      description = "Memory Efficient Serialization Library";
+      longDescription = ''
+        FlatBuffers is an efficient cross platform serialization library for
+        games and other memory constrained apps. It allows you to directly
+        access serialized data without unpacking/parsing it first, while still
+        having great forwards/backwards compatibility.
+      '';
+      homepage = "https://google.github.io/flatbuffers/";
+      license = licenses.asl20;
+      mainProgram = "flatc";
+      platforms = platforms.unix;
+    };
+  };
 
   strictDeps = true;
 
@@ -255,7 +290,7 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_KERNEL_TEST=OFF"
-    "-DTFLITE_HOST_TOOLS_DIR=${buildPackages.flatbuffers_23}/bin"
+    "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
