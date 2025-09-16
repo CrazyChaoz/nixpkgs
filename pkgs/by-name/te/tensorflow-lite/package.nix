@@ -145,8 +145,8 @@ stdenv.mkDerivation rec {
   kleidiai-file = fetchFromGitHub {
     owner = "ARM-software";
     repo = "kleidiai";
-    rev = "v0.1.0";
-    sha256 = "sha256-6Xq7HHe7MdygHtgF1Cm8ECFi2tkVFGuk7jNX1P0+rl8=";
+    rev = "dc69e899945c412a8ce39ccafd25139f743c60b1";
+    sha256 = "sha256-VLVITcDBCj1PLke4H+9bOBsEHSGI28bub5U1/5HxVpk=";
   };
 
   kleidiai-modded =
