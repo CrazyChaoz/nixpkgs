@@ -14,7 +14,6 @@
   zlib,
   patchelf,
   buildPackages,
-  protobuf,
 }:
 
 stdenv.mkDerivation rec {
