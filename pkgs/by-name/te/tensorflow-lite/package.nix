@@ -271,7 +271,6 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     pkg-config
     git
-    buildPackages.protobuf
   ];
 
   buildInputs = [
@@ -290,6 +289,9 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
+    "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
+    "-DCMAKE_SYSTEM_NAME=Linux"
+    "-DCMAKE_SYSTEM_PROCESSOR=aarch64"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
