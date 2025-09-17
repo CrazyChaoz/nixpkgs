@@ -289,19 +289,10 @@ stdenv.mkDerivation rec {
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
-    "-DCMAKE_SYSTEM_NAME=Linux"
-    "-DCMAKE_SYSTEM_PROCESSOR=aarch64"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
-  preBuild = ''
-    ls -al /build/source/tensorflow/lite/build
-    cat /build/source/tensorflow/lite/build/profiling/proto/CMakeFiles/model_runtime_info_proto.dir/build.make
-
-    # replace Protobuf_PROTOC_EXECUTABLE:INTERNAL=protoc in /build/source/tensorflow/lite/build/CmakeCache.txt
-    #sed -i 's|Protobuf_PROTOC_EXECUTABLE:INTERNAL=protoc|Protobuf_PROTOC_EXECUTABLE:INTERNAL='${buildPackages.protobuf_21}/bin/protoc'|g' /build/source/tensorflow/lite/build/CMakeCache.txt
-
-  '';
+  
 
   postPatch = ''
     # Apply any patches needed for GCC compatibility, etc.
