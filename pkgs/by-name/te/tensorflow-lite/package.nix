@@ -297,6 +297,7 @@ stdenv.mkDerivation rec {
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
+    "-DSYSTEM_PROTOBUF=OFF"
     "-DTFLITE_KERNEL_TEST=OFF"
     "-DTFLITE_HOST_TOOLS_DIR=${tflite-tools}/bin"
     "-DBUILD_SHARED_LIBS=ON"
@@ -473,7 +474,7 @@ stdenv.mkDerivation rec {
   preConfigure = ''
 
     protoc --version
-    
+
     cmakeFlagsArray+=(
        "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
       "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
