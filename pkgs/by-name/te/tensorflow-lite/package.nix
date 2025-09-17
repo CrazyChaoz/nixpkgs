@@ -12,7 +12,6 @@
   runCommand,
   fetchzip,
   zlib,
-  patchelf,
   buildPackages,
 }:
 
@@ -289,11 +288,20 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
-    "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
+    "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
     "-DCMAKE_SYSTEM_NAME=Linux"
     "-DCMAKE_SYSTEM_PROCESSOR=aarch64"
     "-DBUILD_SHARED_LIBS=ON"
   ];
+
+  preBuild = ''
+    ls -al /build/source/tensorflow/lite/build
+    cat /build/source/tensorflow/lite/build/profiling/proto/CMakeFiles/model_runtime_info_proto.dir/build.make
+
+    # replace Protobuf_PROTOC_EXECUTABLE:INTERNAL=protoc in /build/source/tensorflow/lite/build/CmakeCache.txt
+    #sed -i 's|Protobuf_PROTOC_EXECUTABLE:INTERNAL=protoc|Protobuf_PROTOC_EXECUTABLE:INTERNAL='${buildPackages.protobuf_21}/bin/protoc'|g' /build/source/tensorflow/lite/build/CMakeCache.txt
+
+  '';
 
   postPatch = ''
     # Apply any patches needed for GCC compatibility, etc.
@@ -460,13 +468,16 @@ stdenv.mkDerivation rec {
       LICENSE_URL "file://${re2-file}/LICENSE"\
     ' tools/cmake/modules/Findre2.cmake
 
+    # insert into line 22 of profiling/proto/CMakeLists.txt
+    sed -i '22i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' profiling/proto/CMakeLists.txt
+
+    chmod +w ../core/example
+    chmod +w ../core/example/CMakeLists.txt
+    sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' ../core/example/CMakeLists.txt
 
   '';
 
   preConfigure = ''
-
-    ${buildPackages.protobuf}/bin/protoc --version
-
     cmakeFlagsArray+=(
        "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
       "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
@@ -477,7 +488,7 @@ stdenv.mkDerivation rec {
   '';
 
   installPhase = ''
-    mkdir -p $out/{bin,lib,include,everything}
+    mkdir -p $out/{bin,lib,include}
 
     # Copy built libraries
 
@@ -496,8 +507,11 @@ stdenv.mkDerivation rec {
       chmod -x "$path"
     done
 
-    ${patchelf}/bin/patchelf --print-needed $out/lib/libtensorflow-lite.so
-    ${patchelf}/bin/patchelf --remove-needed libfft2d_fftsg2d.so \
+    ${buildPackages.patchelf}/bin/patchelf --print-needed $out/lib/libtensorflow-lite.so
+
+    echo "Patching tensorflow-lite dependencies..."
+    echo "Removing original dependencies:"
+    ${buildPackages.patchelf}/bin/patchelf --remove-needed libfft2d_fftsg2d.so \
     --remove-needed libXNNPACK.so \
     --remove-needed libfft2d_fftsg.so \
     --remove-needed libeight_bit_int_gemm.so \
@@ -559,7 +573,8 @@ stdenv.mkDerivation rec {
     --remove-needed libabsl_log_severity.so \
     $out/lib/libtensorflow-lite.so
 
-    ${patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg2d.so \
+    echo "Adding patched dependencies:"
+    ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg2d.so \
     --add-needed $out/lib/libXNNPACK.so \
     --add-needed $out/lib/libfft2d_fftsg.so \
     --add-needed $out/lib/libeight_bit_int_gemm.so \
@@ -621,39 +636,61 @@ stdenv.mkDerivation rec {
     --add-needed $out/lib/libabsl_log_severity.so \
     $out/lib/libtensorflow-lite.so
 
-    ${patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
+    echo "Patching other dependencies..."
+    ${buildPackages.patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg2d.so
 
-    ${patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
+    ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg2d.so
 
-    ${patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
+    echo "Patching example_proto and fft2d_fftsg3d dependencies..."
+    ${buildPackages.patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg3d.so
 
-    ${patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
+    ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
     $out/lib/libfft2d_fftsg3d.so
 
 
-    ${patchelf}/bin/patchelf --remove-needed libfeature_proto.so \
+    ${buildPackages.patchelf}/bin/patchelf --remove-needed libfeature_proto.so \
     $out/lib/libexample_proto.so
 
-    ${patchelf}/bin/patchelf --add-needed $out/lib/libfeature_proto.so \
+    ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfeature_proto.so \
     $out/lib/libexample_proto.so
 
-
-    ${patchelf}/bin/patchelf \
+    echo "Patching XNNPACK dependencies..."
+    ${buildPackages.patchelf}/bin/patchelf \
     --remove-needed libpthreadpool.so \
     --remove-needed libcpuinfo.so \
     $out/lib/libXNNPACK.so
 
-    ${patchelf}/bin/patchelf \
+
+    if ${buildPackages.patchelf}/bin/patchelf --print-needed $out/lib/libXNNPACK.so | grep -q 'libkleidiai.so'; then
+      echo "libkleidiai.so found in libXNNPACK.so; patching kleidiai dependency..."
+      ${buildPackages.patchelf}/bin/patchelf \
+      --remove-needed libkleidiai.so \
+      $out/lib/libXNNPACK.so
+
+      ${buildPackages.patchelf}/bin/patchelf \
+      --add-needed $out/lib/libkleidiai.so \
+      $out/lib/libXNNPACK.so
+      
+      ${buildPackages.patchelf}/bin/patchelf \
+      --remove-needed libkleidiai.so \
+      $out/lib/libtensorflow-lite.so
+
+      ${buildPackages.patchelf}/bin/patchelf \
+      --add-needed $out/lib/libkleidiai.so \
+      $out/lib/libtensorflow-lite.so
+      
+      
+    fi
+
+    ${buildPackages.patchelf}/bin/patchelf \
     --add-needed $out/lib/libpthreadpool.so \
     --add-needed $out/lib/libcpuinfo.so \
     $out/lib/libXNNPACK.so
 
 
-    ldd $out/lib/libtensorflow-lite.so
-    ls -al $out/lib/
   '';
 
   # installPhase = ''
