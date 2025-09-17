@@ -263,13 +263,6 @@ stdenv.mkDerivation rec {
     };
   };
 
-  tflite-tools = runCommand "tflite-tools" { } ''
-    mkdir -p $out/bin
-    cp '${custom-flatc}/bin/flatc' $out/bin/
-    cp '${buildPackages.protobuf}/bin/protoc' $out/bin/
-    chmod +x $out/bin/flatc $out/bin/protoc
-  '';
-
   #strictDeps = true;
 
   nativeBuildInputs = [
@@ -296,7 +289,13 @@ stdenv.mkDerivation rec {
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
-    "-DTFLITE_HOST_TOOLS_DIR=${tflite-tools}/bin"
+    "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
+    "-DProtobuf_PROTOC_EXECUTABLE=${buildPackages.protobuf}/bin/protoc"
+    "-DPROTOC_EXECUTABLE=${buildPackages.protobuf}/bin/protoc"
+    "-DPROTOC_EXE=${buildPackages.protobuf}/bin/protoc"
+    "-Dprotobuf_PROTOC_EXECUTABLE=${buildPackages.protobuf}/bin/protoc"
+    "-DPROTOC=${buildPackages.protobuf}/bin/protoc"
+    "-Dprotobuf_BUILD_PROTOC_BINARIES=OFF"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
