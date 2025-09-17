@@ -272,6 +272,7 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     pkg-config
     git
+    buildPackages.protobuf
   ];
 
   buildInputs = [
@@ -290,12 +291,6 @@ stdenv.mkDerivation rec {
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
-    "-DProtobuf_PROTOC_EXECUTABLE=${buildPackages.protobuf}/bin/protoc"
-    "-DPROTOC_EXECUTABLE=${buildPackages.protobuf}/bin/protoc"
-    "-DPROTOC_EXE=${buildPackages.protobuf}/bin/protoc"
-    "-Dprotobuf_PROTOC_EXECUTABLE=${buildPackages.protobuf}/bin/protoc"
-    "-DPROTOC=${buildPackages.protobuf}/bin/protoc"
-    "-Dprotobuf_BUILD_PROTOC_BINARIES=OFF"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
