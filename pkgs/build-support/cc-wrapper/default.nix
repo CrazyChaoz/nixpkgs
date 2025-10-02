@@ -106,7 +106,7 @@ let
     versionAtLeast
     ;
 
-  inherit (stdenvNoCC) hostPlatform targetPlatform;
+  inherit (stdenvNoCC) buildPlatform hostPlatform targetPlatform;
 
   includeFortifyHeaders' =
     if includeFortifyHeaders != null then
@@ -126,6 +126,7 @@ let
   libc_dev = optionalString (libc != null) (getDev libc);
   libc_lib = optionalString (libc != null) (getLib libc);
   cc_solib = getLib cc + optionalString (targetPlatform != hostPlatform) "/${targetPlatform.config}";
+  cc_bin = getBin cc + optionalString (targetPlatform != hostPlatform) "/${targetPlatform.config}";
 
   # The wrapper scripts use 'cat' and 'grep', so we may need coreutils.
   coreutils_bin = optionalString (!nativeTools) (getBin coreutils);
@@ -445,6 +446,13 @@ stdenvNoCC.mkDerivation {
     inherit nixSupport;
 
     inherit defaultHardeningFlags;
+  }
+  // optionalAttrs cc.langGo or false {
+    # So gccgo looks more like go for buildGoModule
+
+    inherit (targetPlatform.go) GOOS GOARCH GOARM;
+
+    CGO_ENABLED = 1;
   };
 
   dontBuild = true;
@@ -583,15 +591,21 @@ stdenvNoCC.mkDerivation {
   ]
   ++ optional (cc.langC or true) ./setup-hook.sh
   ++ optional (cc.langFortran or false) ./fortran-hook.sh
-  ++ optional (targetPlatform.isWindows) (
+  ++ optional (targetPlatform.isWindows || targetPlatform.isCygwin) (
     stdenvNoCC.mkDerivation {
       name = "win-dll-hook.sh";
       dontUnpack = true;
-      installPhase = ''
-        echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib" > $out
-        echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib64" >> $out
-        echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib32" >> $out
-      '';
+      installPhase =
+        if targetPlatform.isCygwin then
+          ''
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_bin}/lib" >> $out
+          ''
+        else
+          ''
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib" > $out
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib64" >> $out
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib32" >> $out
+          '';
     }
   );
 
@@ -697,6 +711,11 @@ stdenvNoCC.mkDerivation {
         for dir in "${cc}"/lib/gcc/*/*/include-fixed; do
           include '-idirafter' ''${dir} >> $out/nix-support/libc-cflags
         done
+      ''
+      + optionalString (libc.w32api or null != null) ''
+        echo '-idirafter ${lib.getDev libc.w32api}${
+          libc.incdir or "/include/w32api"
+        }' >> $out/nix-support/libc-cflags
       ''
       + ''
 
@@ -871,6 +890,9 @@ stdenvNoCC.mkDerivation {
       hardening_unsupported_flags+=" format stackprotector strictoverflow"
     ''
     + optionalString cc.langFortran or false ''
+      hardening_unsupported_flags+=" format"
+    ''
+    + optionalString cc.langGo or false ''
       hardening_unsupported_flags+=" format"
     ''
     + optionalString targetPlatform.isWasm ''

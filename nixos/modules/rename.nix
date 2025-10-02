@@ -34,6 +34,11 @@ in
       "fontconfig"
       "penultimate"
     ] "The corresponding package has removed from nixpkgs.")
+    (mkRemovedOptionModule [
+      "hardware"
+      "amdgpu"
+      "amdvlk"
+    ] "'amdvlk' has been removed. The replacement driver RADV, part of Mesa, is enabled by default.")
     (mkRemovedOptionModule [ "hardware" "brightnessctl" ] ''
       The brightnessctl module was removed because newer versions of
       brightnessctl don't require the udev rules anymore (they can use the
@@ -60,8 +65,16 @@ in
     ] "The corresponding package was removed from nixpkgs.")
     (mkRemovedOptionModule [
       "programs"
+      "cardboard"
+    ] "The corresponding package was removed from nixpkgs.")
+    (mkRemovedOptionModule [
+      "programs"
       "gnome-documents"
     ] "The corresponding package was removed from nixpkgs.")
+    (mkRemovedOptionModule [
+      "programs"
+      "goldwarden"
+    ] "'goldwarden' has been removed from nixpkgs.")
     (mkRemovedOptionModule [ "programs" "pantheon-tweaks" ] ''
       pantheon-tweaks is no longer a switchboard plugin but an independent app,
       adding the package to environment.systemPackages is sufficient.
@@ -107,6 +120,10 @@ in
     ] "cgmanager was deprecated by lxc and therefore removed from nixpkgs.")
     (mkRemovedOptionModule [
       "services"
+      "chatgpt-retrieval-plugin"
+    ] "The corresponding package was removed from nixpkgs.")
+    (mkRemovedOptionModule [
+      "services"
       "chronos"
     ] "The corresponding package was removed from nixpkgs.")
     (mkRemovedOptionModule [
@@ -131,7 +148,6 @@ in
       "services"
       "deepin"
     ] "the Deepin desktop environment has been removed from nixpkgs due to lack of maintenance.")
-    (mkRemovedOptionModule [ "services" "dnscrypt-proxy" ] "Use services.dnscrypt-proxy2 instead")
     (mkRemovedOptionModule [ "services" "dnscrypt-wrapper" ] ''
       The dnscrypt-wrapper module was removed since the project has been effectively unmaintained since 2018;
       moreover the NixOS module had to rely on an abandoned version of dnscrypt-proxy v1 for the rotation of keys.
@@ -208,6 +224,9 @@ in
       "services"
       "moinmoin"
     ] "The corresponding package was removed from nixpkgs.")
+    (mkRemovedOptionModule [ "services" "morty" ]
+      "services.morty has been removed from NixOS. As the morty package was unmaintained and removed and searxng, its main consumer, dropped support for it."
+    )
     (mkRemovedOptionModule [ "services" "mwlib" ] "The corresponding package was removed from nixpkgs.")
     (mkRemovedOptionModule [ "services" "pantheon" "files" ] ''
       This module was removed, please add pkgs.pantheon.elementary-files to environment.systemPackages directly.
@@ -369,6 +388,11 @@ in
     '')
     (mkRemovedOptionModule [ "services" "gateone" ] ''
       The gateone module was removed since the package was removed alongside much other obsolete python 2.
+    '')
+    (mkRemovedOptionModule [ "virtualisation" "lxd" ] ''
+      LXD has been removed from NixOS due to lack of Nixpkgs maintenance.
+      Consider migrating or switching to Incus, or remove from your configuration.
+      https://linuxcontainers.org/incus/docs/main/howto/server_migrate_lxd/
     '')
     # Do NOT add any option renames here, see top of the file
   ];

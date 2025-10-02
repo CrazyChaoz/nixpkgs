@@ -241,6 +241,26 @@ in
   boolToString = b: if b then "true" else "false";
 
   /**
+    Converts a boolean to a string.
+
+    This function uses the strings "yes" and "no" to represent
+    boolean values.
+
+    # Inputs
+
+    `b`
+
+    : The boolean to convert
+
+    # Type
+
+    ```
+    boolToYesNo :: bool -> string
+    ```
+  */
+  boolToYesNo = b: if b then "yes" else "no";
+
+  /**
     Merge two attribute sets shallowly, right side trumps left
 
     mergeAttrs :: attrs -> attrs -> attrs
@@ -749,7 +769,7 @@ in
     importTOML :: path -> any
     ```
   */
-  importTOML = path: builtins.fromTOML (builtins.readFile path);
+  importTOML = path: fromTOML (builtins.readFile path);
 
   /**
     `warn` *`message`* *`value`*
@@ -955,7 +975,7 @@ in
       unexpected = lib.subtractLists valid given;
     in
     lib.throwIfNot (unexpected == [ ])
-      "${msg}: ${builtins.concatStringsSep ", " (builtins.map builtins.toString unexpected)} unexpected; valid ones: ${builtins.concatStringsSep ", " (builtins.map builtins.toString valid)}";
+      "${msg}: ${builtins.concatStringsSep ", " (map toString unexpected)} unexpected; valid ones: ${builtins.concatStringsSep ", " (map toString valid)}";
 
   info = msg: builtins.trace "INFO: ${msg}";
 
@@ -1124,7 +1144,7 @@ in
       match = builtins.match "(0x)?([0-7]?[0-9A-Fa-f]{1,15})" str;
     in
     if match != null then
-      (builtins.fromTOML "v=0x${builtins.elemAt match 1}").v
+      (fromTOML "v=0x${builtins.elemAt match 1}").v
     else
       # TODO: Turn this into a `throw` in 26.05.
       assert lib.warn "fromHexString: ${
@@ -1133,7 +1153,7 @@ in
       let
         noPrefix = lib.strings.removePrefix "0x" (lib.strings.toLower str);
       in
-      (builtins.fromTOML "v=0x${noPrefix}").v;
+      (fromTOML "v=0x${noPrefix}").v;
 
   /**
     Convert the given positive integer to a string of its hexadecimal

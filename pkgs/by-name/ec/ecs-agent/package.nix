@@ -6,13 +6,13 @@
 
 buildGoModule rec {
   pname = "amazon-ecs-agent";
-  version = "1.97.1";
+  version = "1.99.1";
 
   src = fetchFromGitHub {
     rev = "v${version}";
     owner = "aws";
     repo = "amazon-ecs-agent";
-    hash = "sha256-o4jvB15YZdZGbUyvKkHvJRKpzBBsuSt1cObADRw6dco=";
+    hash = "sha256-aGmXu+ho5H6vPTBWR5OvqDcmFQN87BOl99HGIek24CE=";
   };
 
   vendorHash = null;

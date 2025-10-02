@@ -22,12 +22,12 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "opencode";
-  version = "0.6.3";
+  version = "0.14.0";
   src = fetchFromGitHub {
     owner = "sst";
     repo = "opencode";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-hufgCO3g0WZT4+hX1lqmhvrthFO30c0NS3ryNJMmOxo=";
+    hash = "sha256-w+tYMt+Ucin02GuT7ET4UKFgktay5q5Wywsr+vQgLlo=";
   };
 
   tui = buildGoModule {
@@ -36,7 +36,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     modRoot = "packages/tui";
 
-    vendorHash = "sha256-8pwVQVraLSE1DRL6IFMlQ/y8HQ8464N/QwAS8Faloq4=";
+    vendorHash = "sha256-H+TybeyyHTbhvTye0PCDcsWkcN8M34EJ2ddxyXEJkZI=";
 
     subPackages = [ "cmd/opencode" ];
 
@@ -81,10 +81,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
        bun install \
          --filter=opencode \
          --force \
-         --frozen-lockfile \
          --ignore-scripts \
-         --no-progress \
-         --production
+         --no-progress
+         # Remove `--frozen-lockfile` and `--production` — they erroneously report the lockfile needs updating even though `bun install` does not change it.
+         # Related to  https://github.com/oven-sh/bun/issues/19088
+         # --frozen-lockfile \
+         # --production
 
       runHook postBuild
     '';
@@ -101,7 +103,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # Required else we get errors that our fixed-output derivation references store paths
     dontFixup = true;
 
-    outputHash = "sha256-PmLO0aU2E7NlQ7WtoiCQzLRw4oKdKxS5JI571lvbhHo=";
+    outputHash =
+      {
+        x86_64-linux = "sha256-ZIwhqdwlUO61ZXDwgjvKTJAB312pJG8bfbIHJcjdX1w=";
+        aarch64-linux = "sha256-D0lw7fPlk86AXlAO6OCydTvUrDrQ/eWm1Q3QSApL5ic=";
+        x86_64-darwin = "sha256-tUwMQv1z0oJpr0S5n+aaaQPOoAQVqnaS7SHuTdWzrPA=";
+        aarch64-darwin = "sha256-KoZd2Plm5lnDCebMZdtCJuy1qwfFJYbeeY8ttIw7oc4=";
+      }
+      .${stdenv.hostPlatform.system};
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

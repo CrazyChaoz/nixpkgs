@@ -34,7 +34,7 @@
 }:
 let
   pnpm = pnpm_10;
-  version = "1.140.1";
+  version = "2.0.0";
 
   esbuild' = buildPackages.esbuild.override {
     buildGoModule =
@@ -108,14 +108,14 @@ let
     owner = "immich-app";
     repo = "immich";
     tag = "v${version}";
-    hash = "sha256-Bo9wFP0u39aoaNjc8K4Im3HRGZR/TLrDB7+UDAhV1xA=";
+    hash = "sha256-N9/vDOZzx4BQvWQBPE6ANCJ9RhWmytw8j1BgDU6ob+g=";
   };
 
   pnpmDeps = pnpm.fetchDeps {
     pname = "immich";
     inherit version src;
     fetcherVersion = 2;
-    hash = "sha256-DIcUKuU+ToRh/kSLcs4ZEHy7zhFir2nlbRx+/kMagrA=";
+    hash = "sha256-+CwwTqjI+xOGCAb66lZplNMBwR2xJZBs6E0OyGHbSAE=";
   };
 
   web = stdenv.mkDerivation {
@@ -146,10 +146,6 @@ let
       runHook postInstall
     '';
   };
-
-  vips' = vips.overrideAttrs (prev: {
-    mesonFlags = prev.mesonFlags ++ [ "-Dtiff=disabled" ];
-  });
 in
 stdenv.mkDerivation {
   pname = "immich";
@@ -186,7 +182,7 @@ stdenv.mkDerivation {
     pango
     pixman
     # Required for sharp
-    vips'
+    vips
   ];
 
   env.SHARP_FORCE_GLOBAL_LIBVIPS = 1;

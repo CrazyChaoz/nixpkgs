@@ -13,6 +13,7 @@
   opencv-python,
   pandas,
   pillow,
+  polars,
   psutil,
   py-cpuinfo,
   pyyaml,
@@ -32,14 +33,14 @@
 
 buildPythonPackage rec {
   pname = "ultralytics";
-  version = "8.3.174";
+  version = "8.3.203";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ultralytics";
     repo = "ultralytics";
     tag = "v${version}";
-    hash = "sha256-wQ16e67ldrV8KwAXoLyxqzx9DG+LAmU5Mt+65dQzUkY=";
+    hash = "sha256-j19eHxhrkvZ8tyVjO+VSNwXHrH1+c16g9byg69G7miI=";
   };
 
   build-system = [ setuptools ];
@@ -54,6 +55,7 @@ buildPythonPackage rec {
     opencv-python
     pandas
     pillow
+    polars
     psutil
     py-cpuinfo
     pyyaml

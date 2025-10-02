@@ -36,6 +36,11 @@ rec {
     };
   };
 
+  ppc32 = {
+    config = "powerpc-unknown-linux-gnu";
+    rust.rustcTarget = "powerpc-unknown-linux-gnu";
+  };
+
   sheevaplug = {
     config = "armv5tel-unknown-linux-gnueabi";
   }
@@ -381,6 +386,10 @@ rec {
   aarch64-windows = {
     config = "aarch64-pc-windows-msvc";
     useLLVM = true;
+  };
+
+  x86_64-cygwin = {
+    config = "x86_64-pc-cygwin";
   };
 
   # BSDs

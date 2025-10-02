@@ -3,7 +3,7 @@
 Building software with Nix often requires downloading source code and other files from the internet.
 To this end, we use functions that we call _fetchers_, which obtain remote sources via various protocols and services.
 
-Nix provides built-in fetchers such as [`builtins.fetchTarball`](https://nixos.org/manual/nix/stable/language/builtins.html#builtins-fetchTarball).
+Nix provides built-in fetchers such as [`fetchTarball`](https://nixos.org/manual/nix/stable/language/builtins.html#builtins-fetchTarball).
 Nixpkgs provides its own fetchers, which work differently:
 
 - A built-in fetcher will download and cache files at evaluation time and produce a [store path](https://nixos.org/manual/nix/stable/glossary#gloss-store-path).
@@ -911,6 +911,21 @@ fetchFromRadicle {
   repo = "z3gqcJUoA1n9HaHKufZs5FCSGazv5"; # heartwood
   tag = "releases/1.3.0";
   hash = "sha256-4o88BWKGGOjCIQy7anvzbA/kPOO+ZsLMzXJhE61odjw=";
+}
+```
+
+## `fetchRadiclePatch` {#fetchradiclepatch}
+
+`fetchRadiclePatch` works very similarly to `fetchFromRadicle` with almost the same arguments
+expected. However, instead of a `rev` or `tag` argument, a `revision` argument is expected, which
+contains the full revision id of the Radicle patch to fetch.
+
+```nix
+fetchRadiclePatch {
+  seed = "rosa.radicle.xyz";
+  repo = "z4V1sjrXqjvFdnCUbxPFqd5p4DtH5"; # radicle-explorer
+  revision = "d97d872386c70607beda2fb3fc2e60449e0f4ce4"; # patch: d77e064
+  hash = "sha256-ttnNqj0lhlSP6BGzEhhUOejKkkPruM9yMwA5p9Di4bk=";
 }
 ```
 

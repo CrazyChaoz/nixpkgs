@@ -108,8 +108,6 @@ makeScopeWithSplicing' {
 
         libcommuni = callPackage ../development/libraries/libcommuni { };
 
-        libdbusmenu = callPackage ../development/libraries/libdbusmenu-qt/qt-5.5.nix { };
-
         libiodata = callPackage ../development/libraries/libiodata { };
 
         liblastfm = callPackage ../development/libraries/liblastfm { };
@@ -165,15 +163,11 @@ makeScopeWithSplicing' {
 
         qcoro = callPackage ../development/libraries/qcoro { };
 
-        qcsxcad = callPackage ../development/libraries/science/electronics/qcsxcad { };
-
         qcustomplot = callPackage ../development/libraries/qcustomplot { };
 
         qjson = callPackage ../development/libraries/qjson { };
 
         qmltermwidget = callPackage ../development/libraries/qmltermwidget { };
-
-        qmlbox2d = callPackage ../development/libraries/qmlbox2d { };
 
         qoauth = callPackage ../development/libraries/qoauth { };
 
@@ -221,15 +215,9 @@ makeScopeWithSplicing' {
           callPackage ../development/libraries/sailfish-access-control-plugin
             { };
 
-        soqt = callPackage ../development/libraries/soqt { };
-
         telepathy = callPackage ../development/libraries/telepathy/qt { };
 
         qtwebkit-plugins = callPackage ../development/libraries/qtwebkit-plugins { };
-
-        # Not a library, but we do want it to be built for every qt version there
-        # is, to allow users to choose the right build if needed.
-        sddm = callPackage ../applications/display-managers/sddm { };
 
         signond = callPackage ../development/libraries/signond { };
 
