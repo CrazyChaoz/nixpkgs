@@ -262,6 +262,9 @@ stdenv.mkDerivation rec {
   };
 
   #strictDeps = true;
+  # 
+  
+  crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
   nativeBuildInputs = [
     cmake
@@ -290,7 +293,7 @@ stdenv.mkDerivation rec {
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
     "-DBUILD_SHARED_LIBS=ON"
-  ];
+  ]  ;
 
   
 
@@ -467,11 +470,12 @@ stdenv.mkDerivation rec {
     sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' ../core/example/CMakeLists.txt
 
   '';
+  
 
   preConfigure = ''
     cmakeFlagsArray+=(
-       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
-      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
+       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
+      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
      )
 
 
