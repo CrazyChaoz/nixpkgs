@@ -238,12 +238,14 @@ stdenv.mkDerivation rec {
       python3
     ];
 
+    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+    
     cmakeFlags = [
       "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
       "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
-    ];
+    ] ++ lib.optionalString (!doCheck) "-D_POSIX_SOURCE"
+    ++ lib.optionalString (!doCheck) "-D_GNU_SOURCE";
 
-    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
     checkTarget = "test";
 
     meta = with lib; {
@@ -262,9 +264,6 @@ stdenv.mkDerivation rec {
   };
 
   #strictDeps = true;
-  # 
-  
-  crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
   nativeBuildInputs = [
     cmake
@@ -293,9 +292,7 @@ stdenv.mkDerivation rec {
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
     "-DBUILD_SHARED_LIBS=ON"
-  ]  ;
-
-  
+  ];
 
   postPatch = ''
     # Apply any patches needed for GCC compatibility, etc.
@@ -470,12 +467,11 @@ stdenv.mkDerivation rec {
     sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' ../core/example/CMakeLists.txt
 
   '';
-  
 
   preConfigure = ''
     cmakeFlagsArray+=(
-       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
-      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
+       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
+      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
      )
 
 
@@ -668,7 +664,7 @@ stdenv.mkDerivation rec {
       ${buildPackages.patchelf}/bin/patchelf \
       --add-needed $out/lib/libkleidiai.so \
       $out/lib/libXNNPACK.so
-      
+
       ${buildPackages.patchelf}/bin/patchelf \
       --remove-needed libkleidiai.so \
       $out/lib/libtensorflow-lite.so
@@ -676,8 +672,8 @@ stdenv.mkDerivation rec {
       ${buildPackages.patchelf}/bin/patchelf \
       --add-needed $out/lib/libkleidiai.so \
       $out/lib/libtensorflow-lite.so
-      
-      
+
+
     fi
 
     ${buildPackages.patchelf}/bin/patchelf \
