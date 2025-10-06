@@ -198,6 +198,20 @@ stdenv.mkDerivation rec {
     rev = "e6463926479bd6b330cbcf673f7e917803fd5831";
     sha256 = "sha256-arpxR5mUXQctDIfCOgi7fOlJ9A+hcQKL3vQ3/rXgdWE=";
   };
+  
+  modded-flatbuffers = runCommand "patch-flatbuffers-for-musl" {} ''
+    
+    mkdir -p $out
+    cp -r '${flatbuffers-file}/.' $out/
+
+    chmod +w $out
+
+    substituteInPlace $out/CMakeLists.txt \
+      --replace-fail 'if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)
+    include(CheckCXXSymbolExists)' 'include(CheckCXXSymbolExists)
+  if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)'
+        
+  '';
 
   abseil-file = fetchFromGitHub {
     owner = "abseil";
@@ -231,7 +245,7 @@ stdenv.mkDerivation rec {
     pname = "flatbuffers";
     version = "24.3.25";
 
-    src = flatbuffers-file;
+    src = modded-flatbuffers;
 
     nativeBuildInputs = [
       cmake
@@ -244,14 +258,6 @@ stdenv.mkDerivation rec {
       "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
       "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
     ];
-    
-    preConfigure = ''
-      cmakeFlagsArray+=(
-        -DCMAKE_CXX_FLAGS='${lib.optionalString (!doCheck) "-D_POSIX_SOURCE -D_GNU_SOURCE"}'
-        -DCMAKE_C_FLAGS='${lib.optionalString (!doCheck) "-D_POSIX_SOURCE -D_GNU_SOURCE"}'
-      )
-    '';
-      
 
     checkTarget = "test";
 
@@ -424,10 +430,10 @@ stdenv.mkDerivation rec {
     # replace line 24-29 in tools/cmake/modules/flatbuffers.cmake
     # from internet URL to local path
     sed -i '24,29c\
-      URL file://${flatbuffers-file}\
+      URL file://${modded-flatbuffers}\
       URL_HASH SHA256=6aba714799945d072d0c87c23a08bb7ce949f40fa171028bdef437feb5e07561\
       LICENSE_FILE "LICENSE"\
-      LICENSE_URL "file://${flatbuffers-file}/LICENSE"\
+      LICENSE_URL "file://${modded-flatbuffers}/LICENSE"\
     ' tools/cmake/modules/flatbuffers.cmake
 
 
@@ -478,14 +484,25 @@ stdenv.mkDerivation rec {
     
     # if crossCompiling, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
     ${lib.optionalString crossCompiling ''substituteInPlace tools/cmake/modules/flatbuffers.cmake \
-      --replace '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1"' '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1 -D_POSIX_SOURCE -D_GNU_SOURCE"' ''}
+      --replace '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1"' '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1 -D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0"' ''}
+    
+    ${lib.optionalString crossCompiling ''substituteInPlace tools/cmake/modules/flatbuffers.cmake \
+      --replace 'add_definitions(-DNOMINMAX=1)' '
+      add_definitions(-DNOMINMAX=1)
+      add_definitions(-D_POSIX_SOURCE)
+      add_definitions(-DFLATBUFFERS_LOCALE_INDEPENDENT=0)
+      add_definitions(-D_GNU_SOURCE)' ''}
+    
+    
+    
+    cat tools/cmake/modules/flatbuffers.cmake
     
   '';
 
   preConfigure = ''
     cmakeFlagsArray+=(
-       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}  ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}'"
-      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"} ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}'"
+       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}  ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
+      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"} ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
      )
 
 
