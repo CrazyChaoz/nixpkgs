@@ -475,6 +475,11 @@ stdenv.mkDerivation rec {
     chmod +w ../core/example/CMakeLists.txt
     sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' ../core/example/CMakeLists.txt
 
+    
+    # if crossCompiling, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
+    ${lib.optionalString crossCompiling ''substituteInPlace tools/cmake/modules/flatbuffers.cmake \
+      --replace '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1"' '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1 -D_POSIX_SOURCE -D_GNU_SOURCE"' ''}
+    
   '';
 
   preConfigure = ''
