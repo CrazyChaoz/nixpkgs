@@ -41,17 +41,17 @@ let
 in
 buildGoModule rec {
   pname = "forgejo-runner";
-  version = "10.0.1";
+  version = "11.1.1";
 
   src = fetchFromGitea {
     domain = "code.forgejo.org";
     owner = "forgejo";
     repo = "runner";
     rev = "v${version}";
-    hash = "sha256-p9inpt3v5KnKWdkkr2viL3KxN2fawesjaziyl2QsYko=";
+    hash = "sha256-gItynq665YLHdSXcUrtgIp282t/TBjThDgAYyVYesx0=";
   };
 
-  vendorHash = "sha256-/LoNiNgUCFDW/nlqiDXvr2m0UwFNtyOewGmd1F35YEg=";
+  vendorHash = "sha256-eVOmUozNLHRiNwIhbf7ebVNdRiMAtLMdYI7pnALvl8U=";
 
   # See upstream Makefile
   # https://code.forgejo.org/forgejo/runner/src/branch/main/Makefile
@@ -63,7 +63,7 @@ buildGoModule rec {
   ldflags = [
     "-s"
     "-w"
-    "-X code.forgejo.org/forgejo/runner/v9/internal/pkg/ver.version=${src.rev}"
+    "-X code.forgejo.org/forgejo/runner/v11/internal/pkg/ver.version=${src.rev}"
   ];
 
   checkFlags = [
@@ -94,7 +94,7 @@ buildGoModule rec {
     description = "Runner for Forgejo based on act";
     homepage = "https://code.forgejo.org/forgejo/runner";
     changelog = "https://code.forgejo.org/forgejo/runner/releases/tag/${src.rev}";
-    license = licenses.mit;
+    license = licenses.gpl3Plus;
     maintainers = with maintainers; [
       adamcstephens
       emilylange

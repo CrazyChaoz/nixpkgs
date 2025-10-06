@@ -14,6 +14,8 @@
   apis ? [ "*" ],
   # Whether to enable AWS' custom memory management.
   customMemoryManagement ? true,
+  # Builds in 2+h with 2 cores, and ~10m with a big-parallel builder.
+  requiredSystemFeatures ? [ "big-parallel" ],
 }:
 
 let
@@ -38,7 +40,7 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "aws";
     repo = "aws-sdk-cpp";
-    rev = version;
+    tag = version;
     hash = "sha256-W4eKgUvN2NLYEOO47HTJYJpEmyn10gNK29RIrvoXkek=";
   };
 
@@ -116,8 +118,7 @@ stdenv.mkDerivation rec {
 
   __darwinAllowLocalNetworking = true;
 
-  # Builds in 2+h with 2 cores, and ~10m with a big-parallel builder.
-  requiredSystemFeatures = [ "big-parallel" ];
+  inherit requiredSystemFeatures;
 
   passthru = {
     tests = {

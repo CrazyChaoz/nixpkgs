@@ -3,7 +3,7 @@
   fetchFromGitLab,
   stdenv,
 
-  flint3,
+  flint,
   gmp,
   libmpc,
   mpfr,
@@ -26,18 +26,18 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "s7";
-  version = "11.5-unstable-2025-08-26";
+  version = "11.5-unstable-2025-09-27";
 
   src = fetchFromGitLab {
     domain = "cm-gitlab.stanford.edu";
     owner = "bil";
     repo = "s7";
-    rev = "f2abd58b4311e3f873619a6da1e65c5ad3d81943";
-    hash = "sha256-4si8ObGNeM+grMR83pXppm50HZrw01tayQLePhwNRhk=";
+    rev = "5e05a6ac2c21e19629018edd6e4c434db7ccefa7";
+    hash = "sha256-rMqWQeqBbHAytybX8w9yBAnlzjUJOSKtnpCVF6Nblrg=";
   };
 
   buildInputs =
-    lib.optional withArb flint3
+    lib.optional withArb flint
     ++ lib.optionals withGMP [
       gmp
       mpfr

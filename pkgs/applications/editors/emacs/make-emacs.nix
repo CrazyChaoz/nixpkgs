@@ -57,12 +57,11 @@
   sigtool,
   sqlite,
   replaceVars,
-  systemd,
+  systemdLibs,
   tree-sitter,
   texinfo,
   webkitgtk_4_0,
   wrapGAppsHook3,
-  writeText,
   zlib,
 
   # Boolean flags
@@ -88,17 +87,18 @@
   withPgtk ? false,
   withSelinux ? stdenv.hostPlatform.isLinux,
   withSQLite3 ? true,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   withToolkitScrollBars ? true,
   withTreeSitter ? true,
   withWebP ? true,
   withX ? !(stdenv.hostPlatform.isDarwin || noGui || withPgtk),
   withXinput2 ? withX,
   withXwidgets ?
-    !stdenv.hostPlatform.isDarwin
-    && !noGui
-    && (withGTK3 || withPgtk)
-    && (lib.versionOlder version "30"), # XXX: upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
+    !noGui
+    && (withGTK3 || withPgtk || withNS || variant == "macport")
+    && (stdenv.hostPlatform.isDarwin || lib.versionOlder version "30"),
+  # XXX: - upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
+  # XXX: - Apple_SDK WebKit is compatible with Emacs.
   withSmallJaDic ? false,
   withCompressInstall ? true,
 
@@ -128,7 +128,8 @@ assert withGpm -> stdenv.hostPlatform.isLinux;
 assert withImageMagick -> (withX || withNS);
 assert withNS -> stdenv.hostPlatform.isDarwin && !(withX || variant == "macport");
 assert withPgtk -> withGTK3 && !withX;
-assert withXwidgets -> !noGui && (withGTK3 || withPgtk);
+assert withXwidgets -> !noGui && (withGTK3 || withPgtk || withNS || variant == "macport");
+# XXX: The upstream --with-xwidgets flag is enabled only when Emacs is built with GTK3 or with Cocoa (including the withNS and macport variant).
 
 let
   libGccJitLibraryPaths = [
@@ -320,7 +321,7 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ]
   ++ lib.optionals withSystemd [
-    systemd
+    systemdLibs
   ]
   ++ lib.optionals withTreeSitter [
     tree-sitter
@@ -348,13 +349,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withXinput2 [
     libXi
   ]
-  ++ lib.optionals withXwidgets [
+  ++ lib.optionals (withXwidgets && stdenv.hostPlatform.isLinux) [
     webkitgtk_4_0
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     sigtool
   ]
   ++ lib.optionals withNS [
+    librsvg
+  ]
+  ++ lib.optionals (variant == "macport") [
     librsvg
   ];
 
