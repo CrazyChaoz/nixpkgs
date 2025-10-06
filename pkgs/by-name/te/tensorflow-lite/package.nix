@@ -479,8 +479,8 @@ stdenv.mkDerivation rec {
 
   preConfigure = ''
     cmakeFlagsArray+=(
-       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
-      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
+       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}  ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}'"
+      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"} ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}'"
      )
 
 
