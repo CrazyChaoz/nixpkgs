@@ -243,8 +243,15 @@ stdenv.mkDerivation rec {
     cmakeFlags = [
       "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
       "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
-    ] ++ lib.optionalString (!doCheck) "-D_POSIX_SOURCE"
-    ++ lib.optionalString (!doCheck) "-D_GNU_SOURCE";
+    ] ++ lib.optionalString (!doCheck) [];
+    
+    preConfigure = ''
+      cmakeFlagsArray+=(
+        -DCMAKE_CXX_FLAGS='${lib.optionalString (!doCheck) "-D_POSIX_SOURCE -D_GNU_SOURCE"}'
+        -DCMAKE_C_FLAGS='${lib.optionalString (!doCheck) "-D_POSIX_SOURCE -D_GNU_SOURCE"}'
+      )
+    '';
+      
 
     checkTarget = "test";
 
@@ -264,6 +271,8 @@ stdenv.mkDerivation rec {
   };
 
   #strictDeps = true;
+  
+  crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
   nativeBuildInputs = [
     cmake
@@ -470,8 +479,8 @@ stdenv.mkDerivation rec {
 
   preConfigure = ''
     cmakeFlagsArray+=(
-       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
-      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}'"
+       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
+      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}' ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE"}"
      )
 
 
