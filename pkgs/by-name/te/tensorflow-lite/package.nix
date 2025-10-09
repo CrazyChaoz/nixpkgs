@@ -306,8 +306,7 @@ stdenv.mkDerivation rec {
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
-    "-DBUILD_SHARED_LIBS=ON"
-    "-DCMAKE_INSTALL_PREFIX=$out"
+    "-DBUILD_SHARED_LIBS=OFF"
   ];
 
   postPatch = ''
@@ -515,8 +514,9 @@ stdenv.mkDerivation rec {
 
     # Copy built libraries
     find . -type f  -name "*.a" -exec cp {} $out/lib \;
+    # Copy shared libraries and symlinks to them (eg. libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0)
     find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
-
+    
     # Copy headers
     find . -type f -name '*.h' | while read f; do
       path="$out/include/''${f#./}"
@@ -524,216 +524,14 @@ stdenv.mkDerivation rec {
       chmod -x "$path"
     done
 
-    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
-    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
-    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
-    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
-    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
-
-    # echo "Patching tensorflow-lite dependencies..."
-    # echo "Removing original dependencies:"
-    # ${buildPackages.patchelf}/bin/patchelf --remove-needed libfft2d_fftsg2d.so \
-    # --remove-needed libXNNPACK.so \
-    # --remove-needed libfft2d_fftsg.so \
-    # --remove-needed libeight_bit_int_gemm.so \
-    # --remove-needed libpthreadpool.so \
-    # --remove-needed libcpuinfo.so \
-    # --remove-needed libabsl_status.so \
-    # --remove-needed libabsl_flags_internal.so \
-    # --remove-needed libabsl_flags_marshalling.so \
-    # --remove-needed libabsl_flags_reflection.so \
-    # --remove-needed libabsl_raw_hash_set.so \
-    # --remove-needed libabsl_hash.so \
-    # --remove-needed libabsl_bad_variant_access.so \
-    # --remove-needed libabsl_city.so \
-    # --remove-needed libabsl_low_level_hash.so \
-    # --remove-needed libabsl_hashtablez_sampler.so \
-    # --remove-needed libabsl_flags_config.so \
-    # --remove-needed libabsl_flags_program_name.so \
-    # --remove-needed libabsl_flags_private_handle_accessor.so \
-    # --remove-needed libabsl_flags_commandlineflag.so \
-    # --remove-needed libabsl_flags_commandlineflag_internal.so \
-    # --remove-needed libabsl_cord.so \
-    # --remove-needed libabsl_cordz_info.so \
-    # --remove-needed libabsl_cord_internal.so \
-    # --remove-needed libabsl_cordz_functions.so \
-    # --remove-needed libabsl_exponential_biased.so \
-    # --remove-needed libabsl_cordz_handle.so \
-    # --remove-needed libabsl_synchronization.so \
-    # --remove-needed libabsl_graphcycles_internal.so \
-    # --remove-needed libabsl_kernel_timeout_internal.so \
-    # --remove-needed libabsl_tracing_internal.so \
-    # --remove-needed libabsl_time.so \
-    # --remove-needed libabsl_civil_time.so \
-    # --remove-needed libabsl_time_zone.so \
-    # --remove-needed libabsl_crc_cord_state.so \
-    # --remove-needed libabsl_crc32c.so \
-    # --remove-needed libabsl_crc_internal.so \
-    # --remove-needed libabsl_crc_cpu_detect.so \
-    # --remove-needed libabsl_bad_optional_access.so \
-    # --remove-needed libabsl_leak_check.so \
-    # --remove-needed libabsl_stacktrace.so \
-    # --remove-needed libabsl_str_format_internal.so \
-    # --remove-needed libabsl_strerror.so \
-    # --remove-needed libabsl_symbolize.so \
-    # --remove-needed libabsl_strings.so \
-    # --remove-needed libabsl_int128.so \
-    # --remove-needed libabsl_strings_internal.so \
-    # --remove-needed libabsl_string_view.so \
-    # --remove-needed libabsl_throw_delegate.so \
-    # --remove-needed libabsl_malloc_internal.so \
-    # --remove-needed libabsl_base.so \
-    # --remove-needed libabsl_spinlock_wait.so \
-    # --remove-needed libabsl_debugging_internal.so \
-    # --remove-needed libabsl_demangle_internal.so \
-    # --remove-needed libabsl_demangle_rust.so \
-    # --remove-needed libabsl_decode_rust_punycode.so \
-    # --remove-needed libabsl_utf8_for_code_point.so \
-    # --remove-needed libabsl_bad_any_cast_impl.so \
-    # --remove-needed libabsl_raw_logging_internal.so \
-    # --remove-needed libabsl_log_severity.so \
-    # $out/lib/libtensorflow-lite.so
-
-    # echo "Adding patched dependencies:"
-    # ${buildPackages.patchelf}/bin/patchelf \
-    # --add-needed $out/lib/libfft2d_fftsg2d.so \
-    # --add-needed $out/lib/libXNNPACK.so \
-    # --add-needed $out/lib/libfft2d_fftsg.so \
-    # --add-needed $out/lib/libeight_bit_int_gemm.so \
-    # --add-needed $out/lib/libpthreadpool.so \
-    # --add-needed $out/lib/libcpuinfo.so \
-    # --add-needed $out/lib/libabsl_status.so \
-    # --add-needed $out/lib/libabsl_flags_internal.so \
-    # --add-needed $out/lib/libabsl_flags_marshalling.so \
-    # --add-needed $out/lib/libabsl_flags_reflection.so \
-    # --add-needed $out/lib/libabsl_raw_hash_set.so \
-    # --add-needed $out/lib/libabsl_hash.so \
-    # --add-needed $out/lib/libabsl_bad_variant_access.so \
-    # --add-needed $out/lib/libabsl_city.so \
-    # --add-needed $out/lib/libabsl_low_level_hash.so \
-    # --add-needed $out/lib/libabsl_hashtablez_sampler.so \
-    # --add-needed $out/lib/libabsl_flags_config.so \
-    # --add-needed $out/lib/libabsl_flags_program_name.so \
-    # --add-needed $out/lib/libabsl_flags_private_handle_accessor.so \
-    # --add-needed $out/lib/libabsl_flags_commandlineflag.so \
-    # --add-needed $out/lib/libabsl_flags_commandlineflag_internal.so \
-    # --add-needed $out/lib/libabsl_cord.so \
-    # --add-needed $out/lib/libabsl_cordz_info.so \
-    # --add-needed $out/lib/libabsl_cord_internal.so \
-    # --add-needed $out/lib/libabsl_cordz_functions.so \
-    # --add-needed $out/lib/libabsl_exponential_biased.so \
-    # --add-needed $out/lib/libabsl_cordz_handle.so \
-    # --add-needed $out/lib/libabsl_synchronization.so \
-    # --add-needed $out/lib/libabsl_graphcycles_internal.so \
-    # --add-needed $out/lib/libabsl_kernel_timeout_internal.so \
-    # --add-needed $out/lib/libabsl_tracing_internal.so \
-    # --add-needed $out/lib/libabsl_time.so \
-    # --add-needed $out/lib/libabsl_civil_time.so \
-    # --add-needed $out/lib/libabsl_time_zone.so \
-    # --add-needed $out/lib/libabsl_crc_cord_state.so \
-    # --add-needed $out/lib/libabsl_crc32c.so \
-    # --add-needed $out/lib/libabsl_crc_internal.so \
-    # --add-needed $out/lib/libabsl_crc_cpu_detect.so \
-    # --add-needed $out/lib/libabsl_bad_optional_access.so \
-    # --add-needed $out/lib/libabsl_leak_check.so \
-    # --add-needed $out/lib/libabsl_stacktrace.so \
-    # --add-needed $out/lib/libabsl_str_format_internal.so \
-    # --add-needed $out/lib/libabsl_strerror.so \
-    # --add-needed $out/lib/libabsl_symbolize.so \
-    # --add-needed $out/lib/libabsl_strings.so \
-    # --add-needed $out/lib/libabsl_int128.so \
-    # --add-needed $out/lib/libabsl_strings_internal.so \
-    # --add-needed $out/lib/libabsl_string_view.so \
-    # --add-needed $out/lib/libabsl_throw_delegate.so \
-    # --add-needed $out/lib/libabsl_malloc_internal.so \
-    # --add-needed $out/lib/libabsl_base.so \
-    # --add-needed $out/lib/libabsl_spinlock_wait.so \
-    # --add-needed $out/lib/libabsl_debugging_internal.so \
-    # --add-needed $out/lib/libabsl_demangle_internal.so \
-    # --add-needed $out/lib/libabsl_demangle_rust.so \
-    # --add-needed $out/lib/libabsl_decode_rust_punycode.so \
-    # --add-needed $out/lib/libabsl_utf8_for_code_point.so \
-    # --add-needed $out/lib/libabsl_bad_any_cast_impl.so \
-    # --add-needed $out/lib/libabsl_raw_logging_internal.so \
-    # --add-needed $out/lib/libabsl_log_severity.so \
-    # $out/lib/libtensorflow-lite.so
-
-    # echo "Patching other dependencies..."
-    # ${buildPackages.patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
-    # $out/lib/libfft2d_fftsg2d.so
-
-    # ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
-    # $out/lib/libfft2d_fftsg2d.so
-
-    # echo "Patching example_proto and fft2d_fftsg3d dependencies..."
-    # ${buildPackages.patchelf}/bin/patchelf --remove-needed libfft2d_fftsg.so \
-    # $out/lib/libfft2d_fftsg3d.so
-
-    # ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfft2d_fftsg.so \
-    # $out/lib/libfft2d_fftsg3d.so
-
-
-    # ${buildPackages.patchelf}/bin/patchelf --remove-needed libfeature_proto.so \
-    # $out/lib/libexample_proto.so
-
-    # ${buildPackages.patchelf}/bin/patchelf --add-needed $out/lib/libfeature_proto.so \
-    # $out/lib/libexample_proto.so
-
-    # echo "Patching XNNPACK dependencies..."
-    # ${buildPackages.patchelf}/bin/patchelf \
-    # --remove-needed libpthreadpool.so \
-    # --remove-needed libcpuinfo.so \
-    # $out/lib/libXNNPACK.so
-
-
-    # if ${buildPackages.patchelf}/bin/patchelf --print-needed $out/lib/libXNNPACK.so | grep -q 'libkleidiai.so'; then
-    #   echo "libkleidiai.so found in libXNNPACK.so; patching kleidiai dependency..."
-    #   ${buildPackages.patchelf}/bin/patchelf \
-    #   --remove-needed libkleidiai.so \
-    #   $out/lib/libXNNPACK.so
-
-    #   ${buildPackages.patchelf}/bin/patchelf \
-    #   --add-needed $out/lib/libkleidiai.so \
-    #   $out/lib/libXNNPACK.so
-
-    #   ${buildPackages.patchelf}/bin/patchelf \
-    #   --remove-needed libkleidiai.so \
-    #   $out/lib/libtensorflow-lite.so
-
-    #   ${buildPackages.patchelf}/bin/patchelf \
-    #   --add-needed $out/lib/libkleidiai.so \
-    #   $out/lib/libtensorflow-lite.so
-
-
-    # fi
-
-    # ${buildPackages.patchelf}/bin/patchelf \
-    # --add-needed $out/lib/libpthreadpool.so \
-    # --add-needed $out/lib/libcpuinfo.so \
-    # $out/lib/libXNNPACK.so
-
+    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
+    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
+    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
+    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
+    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
 
   '';
-
-  # installPhase = ''
-  #   mkdir -p $out/{bin,lib,include,everything}
-
-  #   # Copy binaries if any (e.g. benchmark tools)
-  #   find . -type f -executable -name "benchmark_model*" -exec cp {} $out/bin \;
-
-  #   find . -type f -name "*.a" -exec cp {} $out/lib \;
-  #   find . -type f -name "*.so" -exec cp {} $out/lib \;
-
-  #   ls -al $out/lib/
-
-  #   # Copy headers
-  #   find . -type f -name '*.h' | while read f; do
-  #     path="$out/include/''${f#./}"
-  #     install -D "$f" "$path"
-  #     chmod -x "$path"
-  #   done
-  # '';
-
+  
   meta = with lib; {
     description = "Open source deep learning framework for on-device inference";
     homepage = "https://www.tensorflow.org/lite";
