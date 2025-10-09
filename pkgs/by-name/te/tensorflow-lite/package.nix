@@ -516,6 +516,7 @@ stdenv.mkDerivation rec {
     find . -type f  -name "*.a" -exec cp {} $out/lib \;
     # Copy shared libraries and symlinks to them (eg. libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0)
     find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
+    find ${farmhash}/lib -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
     
     # Copy headers
     find . -type f -name '*.h' | while read f; do
