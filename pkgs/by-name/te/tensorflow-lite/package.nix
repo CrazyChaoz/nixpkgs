@@ -306,7 +306,7 @@ stdenv.mkDerivation rec {
     "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
-    "-DBUILD_SHARED_LIBS=OFF"
+    "-DBUILD_SHARED_LIBS=ON"
   ];
 
   postPatch = ''
@@ -524,11 +524,11 @@ stdenv.mkDerivation rec {
       chmod -x "$path"
     done
 
-    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
-    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
-    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
-    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
-    # ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
 
   '';
   
