@@ -514,14 +514,8 @@ stdenv.mkDerivation rec {
     mkdir -p $out/{bin,lib,include}
 
     # Copy built libraries
-
-    # Copy binaries if any (e.g. benchmark tools)
-    find . -type f -executable -name "benchmark_model*" -exec cp {} $out/bin \;
-    # Copy binaries if any (e.g. benchmark tools)
     find . -type f  -name "*.a" -exec cp {} $out/lib \;
-    find . -type f  -name "*.so" -exec cp {} $out/lib \;
-
-    ls -al $out/lib/
+    find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
 
     # Copy headers
     find . -type f -name '*.h' | while read f; do
@@ -530,7 +524,6 @@ stdenv.mkDerivation rec {
       chmod -x "$path"
     done
 
-    ${buildPackages.patchelf}/bin/patchelf --print-rpath $out/lib/libtensorflow-lite.so
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
