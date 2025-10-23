@@ -214,12 +214,6 @@ stdenv.mkDerivation rec {
         
   '';
 
-  abseil-file = fetchFromGitHub {
-    owner = "abseil";
-    repo = "abseil-cpp";
-    rev = "d9e4955c65cd4367dd6bf46f4ccb8cd3d100540b";
-    sha256 = "sha256-QTywqQCkyGFpdbtDBvUwz9bGXxbJs/qoFKF6zYAZUmQ=";
-  };
 
   googletest-file = fetchFromGitHub {
     owner = "google";
@@ -438,15 +432,6 @@ stdenv.mkDerivation rec {
       LICENSE_URL "file://${modded-flatbuffers}/LICENSE"\
     ' tools/cmake/modules/flatbuffers.cmake
 
-
-    # # replace line 25-30 in tools/cmake/modules/abseil-cpp.cmake
-    # # from internet URL to local path
-    # sed -i '25,30c\
-    #   URL file://${abseil-file}\
-    #   URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264\
-    #   LICENSE_FILE "LICENSE"\
-    #   LICENSE_URL "file://${abseil-file}/LICENSE"\
-    # ' tools/cmake/modules/abseil-cpp.cmake
 
     # replace line 24-27 in tools/cmake/modules/Findgoogletest.cmake
     # from internet URL to local path
