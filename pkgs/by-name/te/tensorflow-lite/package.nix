@@ -13,6 +13,7 @@
   fetchzip,
   zlib,
   buildPackages,
+  abseil-cpp,
 }:
 
 stdenv.mkDerivation rec {
@@ -294,6 +295,7 @@ stdenv.mkDerivation rec {
     eigen
     farmhash
     zlib
+    abseil-cpp
   ];
 
   sourceRoot = "source/tensorflow/lite";
@@ -437,14 +439,14 @@ stdenv.mkDerivation rec {
     ' tools/cmake/modules/flatbuffers.cmake
 
 
-    # replace line 25-30 in tools/cmake/modules/abseil-cpp.cmake
-    # from internet URL to local path
-    sed -i '25,30c\
-      URL file://${abseil-file}\
-      URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264\
-      LICENSE_FILE "LICENSE"\
-      LICENSE_URL "file://${abseil-file}/LICENSE"\
-    ' tools/cmake/modules/abseil-cpp.cmake
+    # # replace line 25-30 in tools/cmake/modules/abseil-cpp.cmake
+    # # from internet URL to local path
+    # sed -i '25,30c\
+    #   URL file://${abseil-file}\
+    #   URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264\
+    #   LICENSE_FILE "LICENSE"\
+    #   LICENSE_URL "file://${abseil-file}/LICENSE"\
+    # ' tools/cmake/modules/abseil-cpp.cmake
 
     # replace line 24-27 in tools/cmake/modules/Findgoogletest.cmake
     # from internet URL to local path
