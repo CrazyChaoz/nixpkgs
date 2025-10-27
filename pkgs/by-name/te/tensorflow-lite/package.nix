@@ -199,21 +199,20 @@ stdenv.mkDerivation rec {
     rev = "e6463926479bd6b330cbcf673f7e917803fd5831";
     sha256 = "sha256-arpxR5mUXQctDIfCOgi7fOlJ9A+hcQKL3vQ3/rXgdWE=";
   };
-  
-  modded-flatbuffers = runCommand "patch-flatbuffers-for-musl" {} ''
-    
-    mkdir -p $out
-    cp -r '${flatbuffers-file}/.' $out/
 
-    chmod +w $out
+  modded-flatbuffers = runCommand "patch-flatbuffers-for-musl" { } ''
 
-    substituteInPlace $out/CMakeLists.txt \
-      --replace-fail 'if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)
-    include(CheckCXXSymbolExists)' 'include(CheckCXXSymbolExists)
-  if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)'
-        
+      mkdir -p $out
+      cp -r '${flatbuffers-file}/.' $out/
+
+      chmod +w $out
+
+      substituteInPlace $out/CMakeLists.txt \
+        --replace-fail 'if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)
+      include(CheckCXXSymbolExists)' 'include(CheckCXXSymbolExists)
+    if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)'
+
   '';
-
 
   googletest-file = fetchFromGitHub {
     owner = "google";
@@ -248,7 +247,7 @@ stdenv.mkDerivation rec {
     ];
 
     doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-    
+
     cmakeFlags = [
       "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
       "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
@@ -272,7 +271,7 @@ stdenv.mkDerivation rec {
   };
 
   #strictDeps = true;
-  
+
   crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
   nativeBuildInputs = [
@@ -303,6 +302,7 @@ stdenv.mkDerivation rec {
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
     "-DBUILD_SHARED_LIBS=ON"
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
   ];
 
   postPatch = ''
@@ -468,22 +468,24 @@ stdenv.mkDerivation rec {
     chmod +w ../core/example/CMakeLists.txt
     sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' ../core/example/CMakeLists.txt
 
-    
+
     # if crossCompiling, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
-    ${lib.optionalString crossCompiling ''substituteInPlace tools/cmake/modules/flatbuffers.cmake \
-      --replace '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1"' '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1 -D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0"' ''}
-    
-    ${lib.optionalString crossCompiling ''substituteInPlace tools/cmake/modules/flatbuffers.cmake \
-      --replace 'add_definitions(-DNOMINMAX=1)' '
-      add_definitions(-DNOMINMAX=1)
-      add_definitions(-D_POSIX_SOURCE)
-      add_definitions(-DFLATBUFFERS_LOCALE_INDEPENDENT=0)
-      add_definitions(-D_GNU_SOURCE)' ''}
-    
-    
-    
+    ${lib.optionalString crossCompiling ''
+      substituteInPlace tools/cmake/modules/flatbuffers.cmake \
+            --replace '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1"' '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1 -D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0"' ''}
+
+    ${lib.optionalString crossCompiling ''
+      substituteInPlace tools/cmake/modules/flatbuffers.cmake \
+            --replace 'add_definitions(-DNOMINMAX=1)' '
+            add_definitions(-DNOMINMAX=1)
+            add_definitions(-D_POSIX_SOURCE)
+            add_definitions(-DFLATBUFFERS_LOCALE_INDEPENDENT=0)
+            add_definitions(-D_GNU_SOURCE)' ''}
+
+
+
     cat tools/cmake/modules/flatbuffers.cmake
-    
+
   '';
 
   preConfigure = ''
@@ -504,7 +506,7 @@ stdenv.mkDerivation rec {
     # Copy shared libraries and symlinks to them (eg. libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0)
     find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
     find ${farmhash}/lib -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
-    
+
     # Copy headers
     find . -type f -name '*.h' | while read f; do
       path="$out/include/''${f#./}"
@@ -519,7 +521,7 @@ stdenv.mkDerivation rec {
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
 
   '';
-  
+
   meta = with lib; {
     description = "Open source deep learning framework for on-device inference";
     homepage = "https://www.tensorflow.org/lite";
