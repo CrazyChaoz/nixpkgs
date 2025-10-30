@@ -14,6 +14,7 @@
   zlib,
   buildPackages,
   abseil-cpp,
+  protobuf
 }:
 
 stdenv.mkDerivation rec {
@@ -186,12 +187,7 @@ stdenv.mkDerivation rec {
         ' $out/cmake/DownloadKleidiAI.cmake
       '';
 
-  protobuf-file = fetchFromGitHub {
-    owner = "protocolbuffers";
-    repo = "protobuf";
-    rev = "90b73ac3f0b10320315c2ca0d03a5a9b095d2f66";
-    sha256 = "sha256-17WAhwUvxIQD/QCyQglPVElQ38D/J1FA32hZ8Q8kID0=";
-  };
+  protobuf-file = protobuf.src;
 
   flatbuffers-file = fetchFromGitHub {
     owner = "google";
@@ -284,7 +280,6 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    # Add any libraries required for building TensorFlow Lite
     eigen
     farmhash
     zlib
@@ -298,7 +293,7 @@ stdenv.mkDerivation rec {
     "-DTFLITE_ENABLE_GPU=ON"
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
     "-Wno-dev"
-    "-DSYSTEM_FARMHASH=ON"
+    "-DSYSTEM_FARMHASH=ON"  
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
     "-DBUILD_SHARED_LIBS=ON"
@@ -462,11 +457,11 @@ stdenv.mkDerivation rec {
     ' tools/cmake/modules/Findre2.cmake
 
     # insert into line 22 of profiling/proto/CMakeLists.txt
-    sed -i '22i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' profiling/proto/CMakeLists.txt
+    sed -i '22i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' profiling/proto/CMakeLists.txt
 
     chmod +w ../core/example
     chmod +w ../core/example/CMakeLists.txt
-    sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf_21}/bin/protoc")' ../core/example/CMakeLists.txt
+    sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' ../core/example/CMakeLists.txt
 
 
     # if crossCompiling, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
@@ -519,6 +514,9 @@ stdenv.mkDerivation rec {
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
     ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libprofiling_info_proto.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfeature_proto.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libmodel_runtime_info_proto.so
 
   '';
 
