@@ -242,7 +242,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-nGWQ+T5FmL+hZucbjQlCRTJM1i//gSzua1QxcBFeqwM=";
   };
 
-
   nativeBuildInputs = [
     cmake
     python3
