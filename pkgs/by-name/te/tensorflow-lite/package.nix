@@ -452,32 +452,15 @@ in stdenv.mkDerivation rec {
       install -D "$f" "$path"
       chmod -x "$path"
     done
-
-      if [ -e "$out/lib/libtensorflow-lite.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
-      fi
-      if [ -e "$out/lib/libfft2d_fftsg2d.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
-      fi
-      if [ -e "$out/lib/libexample_proto.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
-      fi
-      if [ -e "$out/lib/libfft2d_fftsg3d.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
-      fi
-      if [ -e "$out/lib/libXNNPACK.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
-      fi
-      if [ -e "$out/lib/libprofiling_info_proto.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libprofiling_info_proto.so
-      fi
-      if [ -e "$out/lib/libfeature_proto.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfeature_proto.so
-      fi
-      if [ -e "$out/lib/libmodel_runtime_info_proto.so" ]; then
-        ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libmodel_runtime_info_proto.so
-      fi
-
+  '' + lib.optionalString (!stdenv.hostPlatform.isStatic) ''
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libprofiling_info_proto.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfeature_proto.so
+      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libmodel_runtime_info_proto.so
   '';
 
   meta = with lib; {
