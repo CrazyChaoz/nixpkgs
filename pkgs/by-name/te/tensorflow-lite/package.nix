@@ -184,8 +184,6 @@ let
           --replace-fail "URL_HASH SHA256=439926527fca9405ae90b602a3938d3435751ec78492e5f1c62d85f5df8c2784" "URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f"
       '';
 
-  protobuf-src = protobuf.src;
-
   flatbuffers-src = fetchFromGitHub {
     owner = "google";
     repo = "flatbuffers";
@@ -356,10 +354,10 @@ stdenv.mkDerivation rec {
     PREFIX \"\''${CMAKE_BINARY_DIR}\""
 
       substituteInPlace tools/cmake/modules/protobuf.cmake \
-        --replace-fail "GIT_REPOSITORY https://github.com/protocolbuffers/protobuf" "URL file://${protobuf-src}" \
+        --replace-fail "GIT_REPOSITORY https://github.com/protocolbuffers/protobuf" "URL file://${protobuf.src}" \
         --replace-fail "GIT_TAG 90b73ac3f0b10320315c2ca0d03a5a9b095d2f66" "URL_HASH SHA256=d7b58087052fc48403fd00b242094f544950dfc0ff275140df6859f10f24203d" \
         --replace-fail "GIT_PROGRESS TRUE" "LICENSE_FILE \"LICENSE\"" \
-        --replace-fail "PREFIX \"\''${CMAKE_BINARY_DIR}\"" "LICENSE_URL \"file://${protobuf-src}/LICENSE\"
+        --replace-fail "PREFIX \"\''${CMAKE_BINARY_DIR}\"" "LICENSE_URL \"file://${protobuf.src}/LICENSE\"
     PREFIX \"\''${CMAKE_BINARY_DIR}\""
 
       substituteInPlace tools/cmake/modules/flatbuffers.cmake \
