@@ -23,6 +23,10 @@ let
     pname = "farmhash";
     version = "master";
 
+    # this is wrong
+    # the rev in here cannot be master
+    # it needs to be an actual commit hash for the FOD to work
+    # also this is a fork?
     src = fetchFromGitHub {
       owner = "yasushi-saito";
       repo = "farmhash";
@@ -35,10 +39,12 @@ let
       perl
     ];
 
+    # not sure if we should keep this
     meta = with lib; {
       description = "FarmHash, a family of hash functions.";
       homepage = "https://github.com/google/farmhash";
       platforms = platforms.all;
+      license = lib.licenses.mit;
     };
   };
 
