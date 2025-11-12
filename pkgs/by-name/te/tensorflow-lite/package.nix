@@ -16,17 +16,8 @@
   protobuf,
   enableGPU ? true,
 }:
-
-stdenv.mkDerivation rec {
-  pname = "tensorflow-lite";
-  version = "2.20.0";
-
-  src = fetchFromGitHub {
-    owner = "tensorflow";
-    repo = "tensorflow";
-    rev = "v${version}";
-    hash = "sha256-nGWQ+T5FmL+hZucbjQlCRTJM1i//gSzua1QxcBFeqwM=";
-  };
+let
+  crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
   farmhash = stdenv.mkDerivation {
     pname = "farmhash";
@@ -166,9 +157,7 @@ stdenv.mkDerivation rec {
   };
 
   kleidiai-modded =
-    runCommand "kleidiai-modded"
-      {
-      }
+    runCommand "kleidiai-modded" {}
       ''
         mkdir -p $out
         cp -r '${kleidiai-file}/.' $out/
@@ -241,8 +230,17 @@ stdenv.mkDerivation rec {
       version = "24.3.25";
       src = modded-flatbuffers;
   };
+in stdenv.mkDerivation rec {
+  pname = "tensorflow-lite";
+  version = "2.20.0";
 
-  crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
+  src = fetchFromGitHub {
+    owner = "tensorflow";
+    repo = "tensorflow";
+    rev = "v${version}";
+    hash = "sha256-nGWQ+T5FmL+hZucbjQlCRTJM1i//gSzua1QxcBFeqwM=";
+  };
+
 
   nativeBuildInputs = [
     cmake
