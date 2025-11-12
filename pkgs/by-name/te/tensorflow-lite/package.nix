@@ -13,7 +13,7 @@
   zlib,
   buildPackages,
   abseil-cpp,
-  protobuf,  
+  protobuf,
   enableGPU ? true,
 }:
 
@@ -139,8 +139,6 @@ stdenv.mkDerivation rec {
         mkdir -p $out
         cp -r '${pthreadpool-file}/.' $out/
 
-        chmod +w $out/cmake
-
         substituteInPlace $out/cmake/DownloadFXdiv.cmake \
           --replace-fail "GIT_REPOSITORY https://github.com/Maratyszcza/FXdiv.git" "URL file://${fxdiv-file}" \
           --replace-fail "GIT_TAG master" "URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f"
@@ -175,8 +173,6 @@ stdenv.mkDerivation rec {
         mkdir -p $out
         cp -r '${kleidiai-file}/.' $out/
 
-        chmod +w $out/cmake
-
         substituteInPlace $out/cmake/FetchGTest.cmake \
           --replace-fail "URL         \''${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest-v1.14.0.zip" "URL file://${googletest-file}" \
           --replace-fail "URL_HASH    SHA256=1f357c27ca988c3f7c6b4bf68a9395005ac6761f034046e9dde0896e3aba00e4" "URL_HASH SHA256=2e35f9922bdf1dba82200e6917da94becc06d608ce168dc23295f4551f829f7f"
@@ -193,8 +189,6 @@ stdenv.mkDerivation rec {
       ''
         mkdir -p $out
         cp -r '${xnnpack-file}/.' $out/
-
-        chmod +w $out/cmake
 
         substituteInPlace $out/cmake/DownloadKleidiAI.cmake \
           --replace-fail "URL https://github.com/ARM-software/kleidiai/archive/dc69e899945c412a8ce39ccafd25139f743c60b1.zip" "URL file://${kleidiai-modded}" \
@@ -214,8 +208,6 @@ stdenv.mkDerivation rec {
 
       mkdir -p $out
       cp -r '${flatbuffers-file}/.' $out/
-
-      chmod +w $out
 
       substituteInPlace $out/CMakeLists.txt \
         --replace-fail 'if(NOT DEFINED FLATBUFFERS_LOCALE_INDEPENDENT)
@@ -246,9 +238,9 @@ stdenv.mkDerivation rec {
   };
 
   custom-flatc = buildPackages.flatbuffers.overrideAttrs {
-      version = "24.3.25";  
+      version = "24.3.25";
       src = modded-flatbuffers;
-  }; 
+  };
 
   crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
@@ -275,7 +267,7 @@ stdenv.mkDerivation rec {
     "-DTFLITE_ENABLE_GPU=${if enableGPU then "OFF" else "ON"}"
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
     "-Wno-dev"
-    "-DSYSTEM_FARMHASH=ON"  
+    "-DSYSTEM_FARMHASH=ON"
     "-DTFLITE_HOST_TOOLS_DIR=${custom-flatc}/bin"
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF"
     "-DBUILD_SHARED_LIBS=${if stdenv.hostPlatform.isStatic then "OFF" else "ON"}"
@@ -416,7 +408,6 @@ stdenv.mkDerivation rec {
       --replace-fail "GIT_SHALLOW TRUE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${re2-file}/LICENSE\""
 
-      
     # THIS IS UGLY, BUT AFAIK THE ONLY WAY TO FORCE IT TO USE THE CORRECT PROTOC
     # insert into line 22 of profiling/proto/CMakeLists.txt
     sed -i '22i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' profiling/proto/CMakeLists.txt
@@ -424,7 +415,6 @@ stdenv.mkDerivation rec {
     chmod +w ../core/example
     chmod +w ../core/example/CMakeLists.txt
     sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' ../core/example/CMakeLists.txt
-
 
     # if crossCompiling, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
     ${lib.optionalString crossCompiling ''
