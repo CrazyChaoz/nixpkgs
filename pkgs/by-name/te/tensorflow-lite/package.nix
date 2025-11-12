@@ -13,8 +13,7 @@
   zlib,
   buildPackages,
   abseil-cpp,
-  protobuf,
-  enableGPU ? true,
+  protobuf
 }:
 let
   crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
