@@ -441,13 +441,9 @@ in stdenv.mkDerivation rec {
   '';
 
   installPhase = ''
-    mkdir -p $out/{bin,lib,include}
+    runHook preInstall
 
-    # Copy built libraries
-    find . -type f  -name "*.a" -exec cp {} $out/lib \;
-    # Copy shared libraries and symlinks to them (eg. libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0)
-    find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
-    find ${farmhash}/lib -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
+    mkdir -p $out/{bin,lib,include}
 
     # Copy headers
     find . -type f -name '*.h' | while read f; do
@@ -455,15 +451,31 @@ in stdenv.mkDerivation rec {
       install -D "$f" "$path"
       chmod -x "$path"
     done
-  '' + lib.optionalString (!stdenv.hostPlatform.isStatic) ''
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libtensorflow-lite.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg2d.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libexample_proto.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfft2d_fftsg3d.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libXNNPACK.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libprofiling_info_proto.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libfeature_proto.so
-      ${buildPackages.patchelf}/bin/patchelf --set-rpath "$ORIGIN/../lib" $out/lib/libmodel_runtime_info_proto.so
+
+    ${if stdenv.hostPlatform.isStatic then ''
+      # Copy static libraries
+      find . -type f  -name "*.a" -exec cp {} $out/lib \;
+    ''  else ''
+      # Copy shared libraries and symlinks to them
+      # (eg. libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0)
+      find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
+      find ${farmhash}/lib -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
+    ''}
+
+    runHook postInstall
+  '';
+
+  preFixup = lib.optionalString (!stdenv.hostPlatform.isStatic) ''
+    # CMake sets RPATHs that include the build directory, which causes failures.
+    # Set RPATH to $ORIGIN/../lib so libraries can find each other using relative paths.
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libtensorflow-lite.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libfft2d_fftsg2d.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libexample_proto.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libfft2d_fftsg3d.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libXNNPACK.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libprofiling_info_proto.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libfeature_proto.so
+    ${buildPackages.patchelf}/bin/patchelf --set-rpath '$ORIGIN/../lib' $out/lib/libmodel_runtime_info_proto.so
   '';
 
   meta = with lib; {
