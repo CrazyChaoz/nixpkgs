@@ -278,25 +278,23 @@ in stdenv.mkDerivation rec {
   ];
 
   postPatch = ''
-    # Apply any patches needed for GCC compatibility, etc.
+    # for gcc compatibility.
     sed -e '1i #include <cstdint>' -i kernels/internal/spectrogram.cc
 
-    # Replace internet URL with local path in fft2d.cmake
+    # patch network fetches of external projects
+
     substituteInPlace tools/cmake/modules/fft2d.cmake \
       --replace-fail "https://storage.googleapis.com/mirror.tensorflow.org/github.com/petewarden/OouraFFT/archive/v1.0.tar.gz" "file://${fft-src}"
 
-    # Replace GIT fetch with local file in gemmlowp.cmake
     substituteInPlace tools/cmake/modules/gemmlowp.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/gemmlowp" "URL file://${gemmlowp-src}" \
       --replace-fail "GIT_TAG 16e8662c34917be0065110bfcd9cc27d30f52fdf" "URL_HASH SHA256=7ba01e461662a088931b947e200f60d8606a238a3be308a32589aa20d2ceb50b" \
       --replace-fail "# GIT_SHALLOW TRUE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${gemmlowp-src}/LICENSE\""
 
-    # Replace internet URL with local path in neon2sse.cmake
     substituteInPlace tools/cmake/modules/neon2sse.cmake \
       --replace-fail "https://storage.googleapis.com/mirror.tensorflow.org/github.com/intel/ARM_NEON_2_x86_SSE/archive/a15b489e1222b2087007546b4912e21293ea86ff.tar.gz" "file://${neon2sse-src}"
 
-    # Replace GIT fetch with local file in cpuinfo.cmake
     substituteInPlace tools/cmake/modules/cpuinfo.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/pytorch/cpuinfo" "URL file://${cpuinfo-src}" \
       --replace-fail "GIT_TAG de0ce7c7251372892e53ce9bc891750d2c9a4fd8" "URL_HASH SHA256=9560fc7cb20c9efb96b69da16d17911e0175f7e753a92146bb7566614b233edf" \
@@ -304,14 +302,12 @@ in stdenv.mkDerivation rec {
       --replace-fail "SOURCE_DIR \"\''${CMAKE_BINARY_DIR}/cpuinfo\"" "LICENSE_URL \"file://${cpuinfo-src}/LICENSE\"
   SOURCE_DIR \"\''${CMAKE_BINARY_DIR}/cpuinfo\""
 
-    # Replace GIT fetch with local file in ml_dtypes.cmake
     substituteInPlace tools/cmake/modules/ml_dtypes.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/jax-ml/ml_dtypes" "URL file://${ml_dtypes-src}" \
       --replace-fail "GIT_TAG 00d98cd92ade342fef589c0470379abb27baebe9" "URL_HASH SHA256=8d8de0d3e51e6dd8fe0b61cb7d75ead5f3bf82724c41013f004d117f18c8e5fe" \
       --replace-fail "# GIT_SHALLOW TRUE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${ml_dtypes-src}/LICENSE\""
 
-    # Replace GIT fetch with local file in ruy.cmake
     substituteInPlace tools/cmake/modules/ruy.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/ruy" "URL file://${ruy-src}" \
       --replace-fail "GIT_TAG 3286a34cc8de6149ac6844107dfdffac91531e72" "URL_HASH SHA256=da5d9103f54717d5601f390fb4576da55409b60530fa24fbab8ad4053e11dc61" \
@@ -320,18 +316,15 @@ in stdenv.mkDerivation rec {
   SOURCE_DIR \"\''${CMAKE_BINARY_DIR}/ruy\""
 
 
-    # Replace internet URL with local path in DownloadPThreadPool.cmake
     substituteInPlace cmake/DownloadPThreadPool.cmake \
       --replace-fail "https://github.com/google/pthreadpool/archive/c2ba5c50bb58d1397b693740cf75fad836a0d1bf.zip" "file://${pthreadpool-modded}"
 
 
-    # Replace internet URL with local path in DownloadFP16.cmake
     substituteInPlace cmake/DownloadFP16.cmake \
       --replace-fail "https://github.com/Maratyszcza/FP16/archive/0a92994d729ff76a58f692d3028ca1b64b145d91.zip" "file://${fp16-src}"
 
 
 
-    # Replace GIT fetch with local file in opencl_headers.cmake
     substituteInPlace tools/cmake/modules/opencl_headers.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-Headers" "URL file://${opencl-src}" \
       --replace-fail "GIT_TAG dcd5bede6859d26833cd85f0d6bbcee7382dc9b3" "URL_HASH SHA256=f78ad9786b95bf341506fc31a495a2883b3e4714d0a962acd23798cea06241ec" \
@@ -339,7 +332,6 @@ in stdenv.mkDerivation rec {
       --replace-fail "PREFIX \"\''${CMAKE_BINARY_DIR}\"" "LICENSE_URL \"file://${opencl-src}/LICENSE\"
   PREFIX \"\''${CMAKE_BINARY_DIR}\""
 
-    # Replace GIT fetch with local file in vulkan_headers.cmake
     substituteInPlace tools/cmake/modules/vulkan_headers.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers" "URL file://${vulkan-src}" \
       --replace-fail "GIT_TAG 32c07c0c5334aea069e518206d75e002ccd85389" "URL_HASH SHA256=76b76c4d2be186c5aa8adf781b4364839a1b0a9dd4682e45ff5fd9c233a6a2db" \
@@ -347,7 +339,6 @@ in stdenv.mkDerivation rec {
       --replace-fail "PREFIX \"\''${CMAKE_BINARY_DIR}\"" "LICENSE_URL \"file://${vulkan-src}/LICENSE.txt\"
   PREFIX \"\''${CMAKE_BINARY_DIR}\""
 
-    # Replace GIT fetch with local file in opengl_headers.cmake
     substituteInPlace tools/cmake/modules/opengl_headers.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/KhronosGroup/OpenGL-Registry.git" "URL file://${opengl-src}" \
       --replace-fail "GIT_TAG 0cb0880d91581d34f96899c86fc1bf35627b4b81" "URL_HASH SHA256=a5238d0588013e17a57e51740c0d547f98f2a8b8465348ebec3177e59ac86326" \
@@ -356,7 +347,6 @@ in stdenv.mkDerivation rec {
   PREFIX \"\''${CMAKE_BINARY_DIR}\"" \
       --replace-fail "LICENSE_URL \"https://www.apache.org/licenses/LICENSE-2.0.txt\"" "LICENSE_URL \"file://${vulkan-src}/LICENSE.txt\""
 
-    # Replace GIT fetch with local file in egl_headers.cmake
     substituteInPlace tools/cmake/modules/egl_headers.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/KhronosGroup/EGL-Registry.git" "URL file://${egl-src}" \
       --replace-fail "GIT_TAG 649981109e263b737e7735933c90626c29a306f2" "URL_HASH SHA256=a5238d0588013e17a57e51740c0d547f98f2a8b8465348ebec3177e59ac86326" \
@@ -365,7 +355,6 @@ in stdenv.mkDerivation rec {
   PREFIX \"\''${CMAKE_BINARY_DIR}\"" \
       --replace-fail "LICENSE_URL \"https://www.apache.org/licenses/LICENSE-2.0.txt\"" "LICENSE_URL \"file://${vulkan-src}/LICENSE.txt\""
 
-    # Replace GIT fetch with local file in xnnpack.cmake
     substituteInPlace tools/cmake/modules/xnnpack.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/XNNPACK" "URL file://${xnnpack-modded}" \
       --replace-fail "GIT_TAG 585e73e63cb35c8a416c83a48ca9ab79f7f7d45e" "URL_HASH SHA256=9aa24c563678ae7e4edc9fea23f37b1db9cc74c49aacf6074c8a8d0668d9bf44" \
@@ -373,7 +362,6 @@ in stdenv.mkDerivation rec {
       --replace-fail "PREFIX \"\''${CMAKE_BINARY_DIR}\"" "LICENSE_URL \"file://${xnnpack-modded}/LICENSE\"
   PREFIX \"\''${CMAKE_BINARY_DIR}\""
 
-    # Replace GIT fetch with local file in protobuf.cmake
     substituteInPlace tools/cmake/modules/protobuf.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/protocolbuffers/protobuf" "URL file://${protobuf-src}" \
       --replace-fail "GIT_TAG 90b73ac3f0b10320315c2ca0d03a5a9b095d2f66" "URL_HASH SHA256=d7b58087052fc48403fd00b242094f544950dfc0ff275140df6859f10f24203d" \
@@ -381,38 +369,31 @@ in stdenv.mkDerivation rec {
       --replace-fail "PREFIX \"\''${CMAKE_BINARY_DIR}\"" "LICENSE_URL \"file://${protobuf-src}/LICENSE\"
   PREFIX \"\''${CMAKE_BINARY_DIR}\""
 
-    # Replace GIT fetch with local file in flatbuffers.cmake
     substituteInPlace tools/cmake/modules/flatbuffers.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/flatbuffers" "URL file://${modded-flatbuffers}" \
       --replace-fail "GIT_TAG e6463926479bd6b330cbcf673f7e917803fd5831" "URL_HASH SHA256=6aba714799945d072d0c87c23a08bb7ce949f40fa171028bdef437feb5e07561" \
       --replace-fail "GIT_SHALLOW FALSE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${modded-flatbuffers}/LICENSE\""
 
-
-    # Replace GIT fetch with local file in Findgoogletest.cmake
     substituteInPlace tools/cmake/modules/Findgoogletest.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/googletest.git" "URL file://${googletest-src}" \
       --replace-fail "GIT_TAG release-1.12.1" "URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264" \
       --replace-fail "GIT_SHALLOW TRUE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${googletest-src}/LICENSE\""
 
-    # Replace GIT fetch with local file in Findgoogle_benchmark.cmake
     substituteInPlace tools/cmake/modules/Findgoogle_benchmark.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/benchmark.git" "URL file://${googlebenchmark-src}" \
       --replace-fail "GIT_TAG v1.7.0" "URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264" \
       --replace-fail "GIT_SHALLOW TRUE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${googlebenchmark-src}/LICENSE\""
 
-
-    # Replace GIT fetch with local file in Findre2.cmake
     substituteInPlace tools/cmake/modules/Findre2.cmake \
       --replace-fail "GIT_REPOSITORY https://github.com/google/re2.git" "URL file://${re2-src}" \
       --replace-fail "GIT_TAG 2021-02-02" "URL_HASH SHA256=413cb0a900a4c8616975bb4306f530cfd6c65f16c9b3faa814a17acd80195264" \
       --replace-fail "GIT_SHALLOW TRUE" "LICENSE_FILE \"LICENSE\"" \
       --replace-fail "GIT_PROGRESS TRUE" "LICENSE_URL \"file://${re2-src}/LICENSE\""
 
-    # THIS IS UGLY, BUT AFAIK THE ONLY WAY TO FORCE IT TO USE THE CORRECT PROTOC
-    # insert into line 22 of profiling/proto/CMakeLists.txt
+    # ugly way to force the correct protoc
     sed -i '22i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' profiling/proto/CMakeLists.txt
 
     chmod +w ../core/example
@@ -447,7 +428,6 @@ in stdenv.mkDerivation rec {
 
     mkdir -p $out/{lib,include}
 
-    # Copy headers
     find . -type f -name '*.h' | while read f; do
       path="$out/include/''${f#./}"
       install -D "$f" "$path"
@@ -455,11 +435,9 @@ in stdenv.mkDerivation rec {
     done
 
     ${if stdenv.hostPlatform.isStatic then ''
-      # Copy static libraries
       find . -type f -name "*.a" -exec cp {} $out/lib \;
     '' else ''
-      # Copy shared libraries and symlinks to them
-      # (eg. libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0)
+      # copy libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0 etc
       find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
       find ${farmhash}/lib -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
     ''}
