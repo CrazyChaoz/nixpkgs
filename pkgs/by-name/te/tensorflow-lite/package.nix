@@ -262,7 +262,7 @@ in stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DCMAKE_BUILD_TYPE=Release"
-    "-DTFLITE_ENABLE_GPU=${if enableGPU then "OFF" else "ON"}"
+    "-DTFLITE_ENABLE_GPU=ON"
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
     "-Wno-dev"
     "-DSYSTEM_FARMHASH=ON"
