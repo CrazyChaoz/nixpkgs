@@ -251,9 +251,12 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     eigen
-    farmhash
     zlib
     abseil-cpp
+  ];
+
+  propagatedBuildInputs = [
+    farmhash
   ];
 
   sourceRoot = "source/tensorflow/lite";
@@ -430,7 +433,6 @@ stdenv.mkDerivation rec {
     '' else ''
       # copy libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0 etc
       find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
-      find ${farmhash}/lib -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
     ''}
 
     runHook postInstall
