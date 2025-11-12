@@ -470,7 +470,6 @@ in stdenv.mkDerivation rec {
     maintainers = with maintainers; [
       mschwaig
       cpcloud
-      crazychaoz
     ];
     platforms = [
       "x86_64-linux"
