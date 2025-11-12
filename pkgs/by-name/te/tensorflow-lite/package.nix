@@ -16,8 +16,6 @@
   protobuf
 }:
 let
-  crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
-
   farmhash = stdenv.mkDerivation {
     pname = "farmhash";
     version = "master";
@@ -419,12 +417,12 @@ in stdenv.mkDerivation rec {
     chmod +w ../core/example/CMakeLists.txt
     sed -i '24i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' ../core/example/CMakeLists.txt
 
-    # if crossCompiling, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
-    ${lib.optionalString crossCompiling ''
+    # if building for musl, edit -DCMAKE_CXX_FLAGS="-DNOMINMAX=1" of flatbuffers.cmake to add -D_POSIX_SOURCE -D_GNU_SOURCE
+    ${lib.optionalString stdenv.hostPlatform.isMusl ''
       substituteInPlace tools/cmake/modules/flatbuffers.cmake \
             --replace '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1"' '-DCMAKE_CXX_FLAGS="-DNOMINMAX=1 -D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0"' ''}
 
-    ${lib.optionalString crossCompiling ''
+    ${lib.optionalString stdenv.hostPlatform.isMusl ''
       substituteInPlace tools/cmake/modules/flatbuffers.cmake \
             --replace 'add_definitions(-DNOMINMAX=1)' '
             add_definitions(-DNOMINMAX=1)
@@ -435,8 +433,8 @@ in stdenv.mkDerivation rec {
 
   preConfigure = ''
     cmakeFlagsArray+=(
-       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}  ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
-      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"} ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
+       "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}  ${lib.optionalString stdenv.hostPlatform.isMusl "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
+      "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"} ${lib.optionalString stdenv.hostPlatform.isMusl "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
      )
 
     patchShebangs configure
