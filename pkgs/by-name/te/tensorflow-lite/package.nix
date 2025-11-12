@@ -10,7 +10,6 @@
   eigen,
   git,
   runCommand,
-  fetchzip,
   zlib,
   buildPackages,
   abseil-cpp,
@@ -68,48 +67,66 @@ stdenv.mkDerivation rec {
     sha256 = "sha256:0pfl7m1b8ddzl6ac30ghlg2575kzx550cmg54akn0knxvfk5kpyv";
   };
 
-  cpuinfo-file = fetchzip {
-    url = "https://github.com/pytorch/cpuinfo/archive/de0ce7c7251372892e53ce9bc891750d2c9a4fd8.zip";
-    sha256 = "sha256-lWD8fLIMnvuWtp2hbReRHgF19+dTqSFGu3VmYUsjPt8=";
+  cpuinfo-file = fetchFromGitHub {
+    owner = "pytorch";
+    repo = "cpuinfo";
+    rev = "de0ce7c7251372892e53ce9bc891750d2c9a4fd8";
+    hash = "sha256-lWD8fLIMnvuWtp2hbReRHgF19+dTqSFGu3VmYUsjPt8=";
   };
 
-  ml_dtypes-file = fetchzip {
-    url = "https://github.com/jax-ml/ml_dtypes/archive/00d98cd92ade342fef589c0470379abb27baebe9.zip";
-    sha256 = "sha256-jY3g0+Uebdj+C2HLfXXq1fO/gnJMQQE/AE0RfxjI5f4=";
+  ml_dtypes-file = fetchFromGitHub {
+    owner = "jax-ml";
+    repo = "ml_dtypes";
+    rev = "00d98cd92ade342fef589c0470379abb27baebe9";
+    hash = "sha256-jY3g0+Uebdj+C2HLfXXq1fO/gnJMQQE/AE0RfxjI5f4=";
   };
 
-  ruy-file = fetchzip {
-    url = "https://github.com/google/ruy/archive/3286a34cc8de6149ac6844107dfdffac91531e72.zip";
+  ruy-file = fetchFromGitHub {
+    owner = "google";
+    repo = "ruy";
+    rev = "3286a34cc8de6149ac6844107dfdffac91531e72";
     sha256 = "sha256-2l2RA/VHF9VgHzkPtFdtpVQJtgUw+iT7q4rUBT4R3GE=";
   };
 
-  pthreadpool-file = fetchzip {
-    url = "https://github.com/google/pthreadpool/archive/c2ba5c50bb58d1397b693740cf75fad836a0d1bf.zip";
+  pthreadpool-file = fetchFromGitHub {
+    owner = "google";
+    repo = "pthreadpool";
+    rev = "c2ba5c50bb58d1397b693740cf75fad836a0d1bf";
     sha256 = "sha256-aAoOCv6rzMsgP4wbcOsmB102SZJp759wK4Hu+zm/6xM=";
   };
 
-  fp16-file = fetchzip {
-    url = "https://github.com/Maratyszcza/FP16/archive/0a92994d729ff76a58f692d3028ca1b64b145d91.zip";
+  fp16-file = fetchFromGitHub {
+    owner = "Maratyszcza";
+    repo = "FP16";
+    rev = "0a92994d729ff76a58f692d3028ca1b64b145d91";
     sha256 = "sha256-m2d9bqZoGWzuUPGkd29MsrdscnJRtuIkLIMp3fMmtRY=";
   };
 
-  fxdiv-file = fetchzip {
-    url = "https://github.com/Maratyszcza/FXdiv/archive/63058eff77e11aa15bf531df5dd34395ec3017c8.zip";
+  fxdiv-file = fetchFromGitHub {
+    owner = "Maratyszcza";
+    repo = "FXdiv";
+    rev = "63058eff77e11aa15bf531df5dd34395ec3017c8";
     sha256 = "sha256-LjX5kivfHbqCIA5pF9qUvswG1gjOFo3CMpX0VR+Cn38=";
   };
 
-  opencl-file = fetchzip {
-    url = "https://github.com/KhronosGroup/OpenCL-Headers/archive/dcd5bede6859d26833cd85f0d6bbcee7382dc9b3.zip";
+  opencl-file = fetchFromGitHub {
+    owner = "KhronosGroup";
+    repo = "OpenCL-Headers";
+    rev = "dcd5bede6859d26833cd85f0d6bbcee7382dc9b3";
     sha256 = "sha256-94rZeGuVvzQVBvwxpJWiiDs+RxTQqWKs0jeYzqBiQew=";
   };
 
-  vulkan-file = fetchzip {
-    url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/32c07c0c5334aea069e518206d75e002ccd85389.zip";
+  vulkan-file = fetchFromGitHub {
+    owner = "KhronosGroup";
+    repo = "Vulkan-Headers";
+    rev = "32c07c0c5334aea069e518206d75e002ccd85389";
     sha256 = "sha256-drdsTSvhhsWqit94G0Nkg5obCp3UaC5F/1/ZwjOmots=";
   };
 
-  opengl-file = fetchzip {
-    url = "https://github.com/KhronosGroup/OpenGL-Registry/archive/0cb0880d91581d34f96899c86fc1bf35627b4b81.zip";
+  opengl-file = fetchFromGitHub {
+    owner = "KhronosGroup";
+    repo = "OpenGL-Registry";
+    rev = "0cb0880d91581d34f96899c86fc1bf35627b4b81";
     sha256 = "sha256-pSONBYgBPhelflF0DA1Uf5jyqLhGU0jr7DF35ZrIYyY=";
   };
 
@@ -231,42 +248,10 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-jOfcmuFvU7B67UjHZ0MwVHfrsTaN1Pem2uUHYmprZ2I=";
   };
 
-  custom-flatc = buildPackages.stdenv.mkDerivation rec {
-    pname = "flatbuffers";
-    version = "24.3.25";
-
-    src = modded-flatbuffers;
-
-    nativeBuildInputs = [
-      cmake
-      python3
-    ];
-
-    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-    cmakeFlags = [
-      "-DFLATBUFFERS_BUILD_TESTS=${if doCheck then "ON" else "OFF"}"
-      "-DFLATBUFFERS_OSX_BUILD_UNIVERSAL=OFF"
-    ];
-
-    checkTarget = "test";
-
-    meta = with lib; {
-      description = "Memory Efficient Serialization Library";
-      longDescription = ''
-        FlatBuffers is an efficient cross platform serialization library for
-        games and other memory constrained apps. It allows you to directly
-        access serialized data without unpacking/parsing it first, while still
-        having great forwards/backwards compatibility.
-      '';
-      homepage = "https://google.github.io/flatbuffers/";
-      license = licenses.asl20;
-      mainProgram = "flatc";
-      platforms = platforms.unix;
-    };
-  };
-
-  #strictDeps = true;
+  custom-flatc = buildPackages.flatbuffers.overrideAttrs {
+      version = "24.3.25";  
+      src = modded-flatbuffers;
+  }; 
 
   crossCompiling = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
 
@@ -456,6 +441,8 @@ stdenv.mkDerivation rec {
       LICENSE_URL "file://${re2-file}/LICENSE"\
     ' tools/cmake/modules/Findre2.cmake
 
+    
+    # THIS IS UGLY, BUT AFAIK THE ONLY WAY TO FORCE IT TO USE THE CORRECT PROTOC
     # insert into line 22 of profiling/proto/CMakeLists.txt
     sed -i '22i\ \ \ set(Protobuf_PROTOC_EXECUTABLE "${buildPackages.protobuf}/bin/protoc")' profiling/proto/CMakeLists.txt
 
@@ -477,10 +464,6 @@ stdenv.mkDerivation rec {
             add_definitions(-DFLATBUFFERS_LOCALE_INDEPENDENT=0)
             add_definitions(-D_GNU_SOURCE)' ''}
 
-
-
-    cat tools/cmake/modules/flatbuffers.cmake
-
   '';
 
   preConfigure = ''
@@ -488,7 +471,6 @@ stdenv.mkDerivation rec {
        "-DCMAKE_CXX_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"}  ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
       "-DCMAKE_C_FLAGS='-DTF_MAJOR_VERSION=2 -DTF_MINOR_VERSION=20 -DTF_PATCH_VERSION=0 -DTF_VERSION_SUFFIX=${"''"} ${lib.optionalString crossCompiling "-D_POSIX_SOURCE -D_GNU_SOURCE -DFLATBUFFERS_LOCALE_INDEPENDENT=0 "}'"
      )
-
 
     patchShebangs configure
   '';
@@ -527,11 +509,11 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [
       mschwaig
       cpcloud
+      crazychaoz
     ];
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    broken = false;
   };
 }
