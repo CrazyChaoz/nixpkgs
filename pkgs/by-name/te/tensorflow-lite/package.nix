@@ -428,12 +428,12 @@ stdenv.mkDerivation rec {
       chmod -x "$path"
     done
 
-    ${if stdenv.hostPlatform.isStatic then ''
-      find . -type f -name "*.a" -exec cp {} $out/lib \;
-    '' else ''
+    find . -type f -name "*.a" -exec cp {} $out/lib \;
+      
+    ${if !stdenv.hostPlatform.isStatic then ''
       # copy libtensorflow-lite.so, libtensorflow-lite.so.2200, libtensorflow-lite.so.2.20.0 etc
       find . -name "*.so*" \( -type f -o -type l \) -exec cp -P {} $out/lib \;
-    ''}
+    '' else ""}
 
     runHook postInstall
   '';
@@ -445,6 +445,7 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [
       mschwaig
       cpcloud
+      crazychaoz
     ];
     platforms = [
       "x86_64-linux"
